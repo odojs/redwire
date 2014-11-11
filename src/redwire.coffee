@@ -91,7 +91,7 @@ module.exports = class RedWire
     @_proxy.on 'proxyReq', (p, req, res, options) =>
       p.setHeader 'host', req.host if req.host?
     @_proxy.on 'error', (err, req, res) =>
-      @_error500 req, res, err
+      @_error500 req, res, err if !res.headersSent
       #@log.error err, 'Proxy Error' if @log?
   
   http: (url, target) =>

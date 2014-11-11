@@ -166,7 +166,9 @@ module.exports = RedWire = (function() {
     })(this));
     return this._proxy.on('error', (function(_this) {
       return function(err, req, res) {
-        return _this._error500(req, res, err);
+        if (!res.headersSent) {
+          return _this._error500(req, res, err);
+        }
       };
     })(this));
   };
