@@ -1,0 +1,31 @@
+{
+  "name": "redwire",
+  "version": "0.1.0",
+  "description": "A dynamic, high performance, load balancing reverse proxy.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha test/*.js --reporter spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/tcoats/redwire.git"
+  },
+  "keywords": [
+    "proxy",
+    "reverse",
+    "load-balancer"
+  ],
+  "author": "Thomas Coats",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tcoats/redwire/issues"
+  },
+  "homepage": "https://github.com/tcoats/redwire",
+  "dependencies": {
+    "http-proxy": "1.6.2"
+  },
+  "devDependencies": {
+    "chai": "1.*",
+    "mocha": "2.*"
+  }
+}
