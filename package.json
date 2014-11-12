@@ -1,6 +1,6 @@
 {
   "name": "redwire",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A dynamic, high performance, load balancing reverse proxy.",
   "main": "index.js",
   "scripts": {
@@ -8,19 +8,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/tcoats/redwire.git"
+    "url": "git://github.com/metocean/redwire.git"
   },
   "keywords": [
+    "reverse-proxy",
     "proxy",
-    "reverse",
     "load-balancer"
   ],
   "author": "Thomas Coats",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/tcoats/redwire/issues"
+    "url": "https://github.com/metocean/redwire/issues"
   },
-  "homepage": "https://github.com/tcoats/redwire",
+  "homepage": "https://github.com/metocean/redwire",
   "dependencies": {
     "http-proxy": "1.6.2"
   },

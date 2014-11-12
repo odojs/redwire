@@ -306,7 +306,7 @@ module.exports = RedWire = (function() {
       return function(mount, url, req, res, next) {
         var t;
         t = target;
-        if (t.indexOf('http://') !== 0 && t.indexOf('https://') !== 0) {
+        if ((t != null) && t.indexOf('http://') !== 0 && t.indexOf('https://') !== 0) {
           t = "http://" + t;
         }
         if (t == null) {
@@ -326,7 +326,7 @@ module.exports = RedWire = (function() {
       return function(mount, url, req, socket, head, next) {
         var t;
         t = target;
-        if (t.indexOf('http://') !== 0 && t.indexOf('https://') !== 0) {
+        if ((t != null) && t.indexOf('http://') !== 0 && t.indexOf('https://') !== 0) {
           t = "http://" + t;
         }
         if (t == null) {

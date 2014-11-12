@@ -161,7 +161,7 @@ module.exports = class RedWire
   
   proxy: (target) => (mount, url, req, res, next) =>
     t = target
-    if t.indexOf('http://') isnt 0 and t.indexOf('https://') isnt 0
+    if t? and t.indexOf('http://') isnt 0 and t.indexOf('https://') isnt 0
       t = "http://#{t}"
     t = req.target if !t?
     url = @_translateUrl mount, t, url
@@ -171,7 +171,7 @@ module.exports = class RedWire
   
   proxyWs: (target) => (mount, url, req, socket, head, next) =>
     t = target
-    if t.indexOf('http://') isnt 0 and t.indexOf('https://') isnt 0
+    if t? and t.indexOf('http://') isnt 0 and t.indexOf('https://') isnt 0
       t = "http://#{t}"
     t = req.target if !t?
     url = @_translateUrl mount, t, url
