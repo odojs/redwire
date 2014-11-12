@@ -164,6 +164,7 @@ module.exports = class RedWire
     if t? and t.indexOf('http://') isnt 0 and t.indexOf('https://') isnt 0
       t = "http://#{t}"
     t = req.target if !t?
+    return @_error500 req, res, 'No server to proxy to' if !t?
     url = @_translateUrl mount, t, url
     #console.log "#{mount} proxy #{req.url} url"
     req.url = url
@@ -174,6 +175,7 @@ module.exports = class RedWire
     if t? and t.indexOf('http://') isnt 0 and t.indexOf('https://') isnt 0
       t = "http://#{t}"
     t = req.target if !t?
+    return @_error500 req, socket, 'No server to proxy to' if !t?
     url = @_translateUrl mount, t, url
     #console.log "#{mount} proxy #{req.url} url"
     req.url = url

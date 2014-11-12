@@ -312,6 +312,9 @@ module.exports = RedWire = (function() {
         if (t == null) {
           t = req.target;
         }
+        if (t == null) {
+          return _this._error500(req, res, 'No server to proxy to');
+        }
         url = _this._translateUrl(mount, t, url);
         req.url = url;
         return _this._proxy.web(req, res, {
@@ -331,6 +334,9 @@ module.exports = RedWire = (function() {
         }
         if (t == null) {
           t = req.target;
+        }
+        if (t == null) {
+          return _this._error500(req, socket, 'No server to proxy to');
         }
         url = _this._translateUrl(mount, t, url);
         req.url = url;
