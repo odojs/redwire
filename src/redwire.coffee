@@ -181,7 +181,7 @@ module.exports = class RedWire
   
   _error404: (req, res) =>
     result =  message: "No http proxy setup for #{req.source.href}"
-    res.writeHead 404, 'Content-Type': 'text/plain'
+    res.writeHead 404, 'Content-Type': 'application/json'
     res.write JSON.stringify result, null, 2
     res.end()
   
@@ -189,7 +189,7 @@ module.exports = class RedWire
   
   _error500: (req, res, err) =>
     result = message: "Internal error for #{req.source.href}", error: err
-    res.writeHead 500, 'Content-Type': 'text/plain'
+    res.writeHead 500, 'Content-Type': 'application/json'
     res.write JSON.stringify result, null, 2
     res.end()
   

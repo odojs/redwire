@@ -347,7 +347,7 @@ module.exports = RedWire = (function() {
       message: "No http proxy setup for " + req.source.href
     };
     res.writeHead(404, {
-      'Content-Type': 'text/plain'
+      'Content-Type': 'application/json'
     });
     res.write(JSON.stringify(result, null, 2));
     return res.end();
@@ -368,7 +368,7 @@ module.exports = RedWire = (function() {
       error: err
     };
     res.writeHead(500, {
-      'Content-Type': 'text/plain'
+      'Content-Type': 'application/json'
     });
     res.write(JSON.stringify(result, null, 2));
     return res.end();
