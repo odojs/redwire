@@ -1,6 +1,6 @@
 {
   "name": "redwire",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "A dynamic, high performance, load balancing reverse proxy.",
   "main": "index.js",
   "scripts": {

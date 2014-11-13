@@ -153,6 +153,15 @@ module.exports = class RedWire
   
   loadBalancer: (options) => new LoadBalancer options
   
+  cors: (allowedHosts) => (mount, url, req, res, next) =>
+    referer = req.headers.referer
+    return next() if !referer?
+    return next() unless referer in allowedHosts
+    res.setHeader 'Access-Control-Allow-Origin', referer
+    res.setHeader 'Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE'
+    res.setHeader 'Access-Control-Allow-Headers', 'Content-Type'
+    next()
+  
   _translateUrl: (mount, target, url) =>
     mount = parse_url mount
     target = parse_url target

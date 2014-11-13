@@ -2,15 +2,15 @@ expect = require('chai').expect
 RedWire = require '../src/redwire'
 http = require 'http'
 
-testServer = (port, cb) ->
-  server = http.createServer (req, res) ->
-    res.write ''
-    res.end()
-    cb req
-    server.close()
-  server.listen port
-
 describe 'RedWire', ->
+  testServer = (port, cb) ->
+    server = http.createServer (req, res) ->
+      res.write ''
+      res.end()
+      cb req
+      server.close()
+    server.listen port
+    
   it 'should have sensible defaults', ->
     redwire = new RedWire()
     redwire.close()
