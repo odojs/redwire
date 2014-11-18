@@ -39,7 +39,7 @@ describe('RedWire', function() {
     redwire.http('example.com').exec('http://example.com/test');
     return expect(passed).to.be.eql(true);
   });
-  return it('should autoprefix target urls with http:// if absent', function(done) {
+  it('should autoprefix target urls with http:// if absent', function(done) {
     var redwire;
     redwire = new RedWire({
       http: {
@@ -51,6 +51,23 @@ describe('RedWire', function() {
       return expect(req.headers['host']).to.be.eql('localhost:53436');
     });
     return http.get('http://localhost:53436', function(res) {
+      redwire.close();
+      return done();
+    });
+  });
+  return it('should pass through query strings', function(done) {
+    var redwire;
+    redwire = new RedWire({
+      http: {
+        port: 53439
+      }
+    });
+    redwire.http('localhost:53439', 'localhost:54679');
+    testServer(54679, function(req) {
+      expect(req.headers['host']).to.be.eql('localhost:53439');
+      return expect(req.url).to.be.eql('/query?string=should&work');
+    });
+    return http.get('http://localhost:53439/query?string=should&work', function(res) {
       redwire.close();
       return done();
     });

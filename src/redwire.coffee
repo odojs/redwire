@@ -166,7 +166,7 @@ module.exports = class RedWire
     mount = parse_url mount
     target = parse_url target
     url = parse_url url
-    "#{target.pathname}#{url.pathname[mount.pathname.length..]}"
+    "#{target.pathname}#{url.path[mount.pathname.length..]}"
   
   proxy: (target) => (mount, url, req, res, next) =>
     t = target

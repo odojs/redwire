@@ -35,3 +35,16 @@ describe 'RedWire', ->
     http.get 'http://localhost:53436', (res) ->
       redwire.close()
       done()
+  
+  it 'should pass through query strings', (done) ->
+    redwire = new RedWire http: port: 53439
+    
+    redwire.http 'localhost:53439', 'localhost:54679'
+    
+    testServer 54679, (req) ->
+      expect(req.headers['host']).to.be.eql 'localhost:53439'
+      expect(req.url).to.be.eql '/query?string=should&work'
+    
+    http.get 'http://localhost:53439/query?string=should&work', (res) ->
+      redwire.close()
+      done()

@@ -319,7 +319,7 @@ module.exports = RedWire = (function() {
     mount = parse_url(mount);
     target = parse_url(target);
     url = parse_url(url);
-    return "" + target.pathname + url.pathname.slice(mount.pathname.length);
+    return "" + target.pathname + url.path.slice(mount.pathname.length);
   };
 
   RedWire.prototype.proxy = function(target) {
