@@ -127,7 +127,7 @@ module.exports = RedWire = (function() {
         return console.log(err);
       };
     })(this));
-    return this._httpServer.listen(this._options.http.port);
+    return this._httpServer.listen(this._options.http.port || 8080);
   };
 
   RedWire.prototype._startHttps = function() {
@@ -154,7 +154,7 @@ module.exports = RedWire = (function() {
         return console.log(err);
       };
     })(this));
-    return this._httpsServer.listen(this._options.https.port);
+    return this._httpsServer.listen(this._options.https.port || 8443);
   };
 
   RedWire.prototype._startProxy = function() {
@@ -281,6 +281,9 @@ module.exports = RedWire = (function() {
         target = parse_url(req.url);
         if (port != null) {
           target.port = port;
+        }
+        if (_this._options.https.port != null) {
+          target.port = _this._options.https.port;
         }
         target.hostname = req.source.hostname;
         target.protocol = 'https:';

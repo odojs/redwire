@@ -64,7 +64,7 @@ module.exports = class RedWire
       console.log err
       #@log.error err, 'Server Error' if @log?
     
-    @_httpServer.listen @_options.http.port
+    @_httpServer.listen @_options.http.port or 8080
   
   _startHttps: =>
     @certificates = new CertificateStore()
@@ -84,7 +84,7 @@ module.exports = class RedWire
       console.log err
       #@log.error err, 'HTTPS Server Error' if @log?
       
-    @_httpsServer.listen @_options.https.port
+    @_httpsServer.listen @_options.https.port or 8443
   
   _startProxy: =>
     @_proxy = http_proxy.createProxyServer @_options.proxy
@@ -146,6 +146,7 @@ module.exports = class RedWire
   sslRedirect: (port) => (mount, url, req, res, next) =>
     target = parse_url req.url
     target.port = port if port?
+    target.port = @_options.https.port if @_options.https.port?
     target.hostname = req.source.hostname
     target.protocol = 'https:'
     res.writeHead 302, Location: format_url target

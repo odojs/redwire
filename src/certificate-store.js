@@ -17,9 +17,9 @@ module.exports = CertificateStore = (function() {
 
   CertificateStore.prototype.add = function(hostname, options) {
     return this._certs[hostname] = crypto.createCredentials({
-      key: this._getCertData(key),
-      cert: this._getCertData(cert),
-      ca: this._getCertData(ca)
+      key: this._getCertData(options.key),
+      cert: this._getCertData(options.cert),
+      ca: this._getCertData(options.ca)
     }).context;
   };
 
@@ -47,7 +47,7 @@ module.exports = CertificateStore = (function() {
   CertificateStore.prototype._getCertData = function(pathname) {
     var path, _i, _len, _results;
     if (pathname) {
-      if (_.isArray(pathname)) {
+      if (pathname instanceof Array) {
         _results = [];
         for (_i = 0, _len = pathname.length; _i < _len; _i++) {
           path = pathname[_i];
