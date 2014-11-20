@@ -7,6 +7,7 @@ format_url = require('url').format
 DispatchNode = require './dispatch-node'
 CertificateStore = require './certificate-store'
 LoadBalancer = require './load-balancer'
+Bindings = require './bindings'
 
 # Copy all of the properties on source to target, recurse if an object
 copy = (source, target) ->
@@ -30,10 +31,7 @@ module.exports = class RedWire
         prependPath: no
     copy options, @_options
     
-    @_httpNode = new DispatchNode()
-    @_httpsNode = new DispatchNode()
-    @_httpWsNode = new DispatchNode()
-    @_httpsWsNode = new DispatchNode()
+    @_bindings = @createNewBindings()
     
     @_startHttp() if @_options.http
     @_startHttps() if @_options.https
@@ -53,12 +51,12 @@ module.exports = class RedWire
   _startHttp: =>
     @_httpServer = http.createServer (req, res) =>
       req.source = @_parseSource req
-      @_httpNode.exec req.source.href, req, res, @_error404
+      @_bindings._http.exec req.source.href, req, res, @_error404
     
     if @_options.http.websockets
       @_httpServer.on 'upgrade', (req, socket, head) =>
         req.source = @_parseSource req
-        @_httpWsNode.exec req.source.href, req, socket, head, @_error404
+        @_bindings._httpWs.exec req.source.href, req, socket, head, @_error404
     
     @_httpServer.on 'error', (err) =>
       console.log err
@@ -70,14 +68,13 @@ module.exports = class RedWire
     @certificates = new CertificateStore()
     
     @_httpsServer = https.createServer @certificates.getServerOptions(@_options.https), (req, res) =>
-      src = @_getReqHost req
-      target = @_getTarget src, req
-      @_proxyWebRequest req, res, target
+      req.source = @_parseSource req
+      @_bindings._https.exec req.source.href, req, res, @_error404
     
     if @_options.https.websockets
       @_httpsServer.on 'upgrade', (req, socket, head) =>
         req.source = @_parseSource req
-        @_httpsWsNode.exec req.source.href, req, socket, head, @_error404
+        @_bindings._httpsWs.exec req.source.href, req, socket, head, @_error404
     
     @_httpsServer.on 'error', (err, req, res) =>
       @_error500 req, res, err
@@ -93,51 +90,6 @@ module.exports = class RedWire
     @_proxy.on 'error', (err, req, res) =>
       @_error500 req, res, err if !res.headersSent
       #@log.error err, 'Proxy Error' if @log?
-  
-  http: (url, target) =>
-    url = "http://#{url}" if url.indexOf('http://') isnt 0
-    result = @_httpNode.match url
-    return result if !target?
-    
-    return result.use @proxy target if typeof target is 'string'
-    return result.use target if typeof target is 'function'
-    
-    throw Error 'target not a known type'
-  
-  https: (url, target) =>
-    url = "https://#{url}" if url.indexOf('https://') isnt 0
-    result = @_httpsNode.match url
-    return result if !target?
-    
-    return result.use @proxy target if typeof target is 'string'
-    return result.use target if typeof target is 'function'
-    
-    throw Error 'target not a known type'
-  
-  httpWs: (url, target) =>
-    url = "http://#{url}" if url.indexOf('http://') isnt 0
-    result = @_httpWsNode.match url
-    return result if !target?
-    
-    return result.use @proxyWs target if typeof target is 'string'
-    return result.use target if typeof target is 'function'
-    
-    throw Error 'target not a known type'
-  
-  httpsWs: (url, target) =>
-    url = "https://#{url}" if url.indexOf('https://') isnt 0
-    result = @_httpsWsNode.match url
-    return result if !target?
-    
-    return result.use @proxyWs target if typeof target is 'string'
-    return result.use target if typeof target is 'function'
-    
-    throw Error 'target not a known type'
-  
-  removeHttp: (url) => @_httpNode.remove url
-  removeHttps: (url) => @_httpsNode.remove url
-  removeHttpWs: (url) => @_httpWsNode.remove url
-  removeHttpsWs: (url) => @_httpsWsNode.remove url
   
   setHost: (host) => (mount, url, req, args..., next) =>
     req.host = host
@@ -224,6 +176,19 @@ module.exports = class RedWire
   
   redirect302: (location) => (mount, url, req, res, next) =>
     @_redirect302 req, res, location
+  
+  http: (url, target) => @_bindings.http url, target
+  https: (url, target) => @_bindings.https url, target
+  httpWs: (url, target) => @_bindings.httpWs url, target
+  httpsWs: (url, target) => @_bindings.httpsWs url, target
+  removeHttp: (url) => @_bindings.removeHttp url
+  removeHttps: (url) => @_bindings.removeHttps url
+  removeHttpWs: (url) => @_bindings.removeHttpWs url
+  removeHttpsWs: (url) => @_bindings.removeHttpsWs url
+  
+  createNewBindings: => new Bindings @
+  setBindings: (bindings) => @_bindings = bindings
+  getBindings: => @_bindings
   
   close: (cb) =>
     @_httpServer.close() if @_httpServer?
