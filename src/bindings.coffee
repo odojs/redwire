@@ -1,6 +1,7 @@
 parse_url = require('url').parse
 
 DispatchNode = require './dispatch-node'
+UseNode = require './use-node'
 
 module.exports = class Bindings
   constructor: (redwire) ->
@@ -9,6 +10,8 @@ module.exports = class Bindings
     @_https = new DispatchNode()
     @_httpWs = new DispatchNode()
     @_httpsWs = new DispatchNode()
+    @_tcp = new UseNode()
+    @_tls = new UseNode()
   
   http: (url, target) =>
     url = "http://#{url}" if url.indexOf('http://') isnt 0
@@ -50,7 +53,36 @@ module.exports = class Bindings
     
     throw Error 'target not a known type'
   
+  tcp: (target) =>
+    return @_tcp if !target?
+    return @_tcp.use @_redwire.proxyTcp target if typeof target is 'string'
+    return @_tcp.use target if typeof target is 'function'
+    
+    throw Error 'target not a known type'
+  
+  tls: (options, target) =>
+    throw Error 'target not defined' if !target?
+    return @_tls.use @_redwire.proxyTls target if typeof target is 'string'
+    return @_tls.use target if typeof target is 'function'
+    
+    throw Error 'target not a known type'
+  
   removeHttp: (url) => @_http.remove url
   removeHttps: (url) => @_https.remove url
   removeHttpWs: (url) => @_httpWs.remove url
   removeHttpsWs: (url) => @_httpsWs.remove url
+  
+  clearHttp: => @_http.clear()
+  clearHttps: => @_https.clear()
+  clearHttpWs: => @_httpWs.clear()
+  clearHttpsWs: => @_httpsWs.clear()
+  clearTcp: => @_tcp.clear()
+  clearTls: => @_tls.clear()
+  
+  clear: =>
+    @clearHttp()
+    @clearHttps()
+    @clearHttpWs()
+    @clearHttpsWs()
+    @clearTcp()
+    @clearTls()

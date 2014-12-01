@@ -1,7 +1,7 @@
 expect = require('chai').expect
 DispatchNode = require '../src/dispatch-node'
 
-describe 'Dispatcher', ->
+describe 'Dispatcher Node', ->
   it 'should exec with no nodes', ->
     node = new DispatchNode()
     node.exec 'http://localhost/', ->

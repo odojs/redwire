@@ -9,7 +9,8 @@ crypto = require('crypto');
 module.exports = CertificateStore = (function() {
   function CertificateStore() {
     this._getCertData = __bind(this._getCertData, this);
-    this.getServerOptions = __bind(this.getServerOptions, this);
+    this.getTlsOptions = __bind(this.getTlsOptions, this);
+    this.getHttpsOptions = __bind(this.getHttpsOptions, this);
     this.isAvailable = __bind(this.isAvailable, this);
     this.add = __bind(this.add, this);
     this._certs = {};
@@ -27,7 +28,7 @@ module.exports = CertificateStore = (function() {
     return this._certs[hostname] != null;
   };
 
-  CertificateStore.prototype.getServerOptions = function(options) {
+  CertificateStore.prototype.getHttpsOptions = function(options) {
     var result;
     result = {
       SNICallback: (function(_this) {
@@ -35,6 +36,18 @@ module.exports = CertificateStore = (function() {
           return _this._certs[hostname];
         };
       })(this),
+      key: this._getCertData(options.key),
+      cert: this._getCertData(options.cert)
+    };
+    if (options.ca) {
+      result.ca = [this._getCertData(options.ca)];
+    }
+    return result;
+  };
+
+  CertificateStore.prototype.getTlsOptions = function(options) {
+    var result;
+    result = {
       key: this._getCertData(options.key),
       cert: this._getCertData(options.cert)
     };

@@ -15,9 +15,16 @@ module.exports = class CertificateStore
   
   isAvailable: (hostname) => @_certs[hostname]?
   
-  getServerOptions: (options) =>
+  getHttpsOptions: (options) =>
     result =
       SNICallback: (hostname) => @_certs[hostname]
+      key: @_getCertData options.key
+      cert: @_getCertData options.cert
+    result.ca = [@_getCertData options.ca] if options.ca
+    result
+  
+  getTlsOptions: (options) =>
+    result =
       key: @_getCertData options.key
       cert: @_getCertData options.cert
     result.ca = [@_getCertData options.ca] if options.ca

@@ -5,7 +5,7 @@ expect = require('chai').expect;
 
 DispatchNode = require('../src/dispatch-node');
 
-describe('Dispatcher', function() {
+describe('Dispatcher Node', function() {
   it('should exec with no nodes', function() {
     var node;
     node = new DispatchNode();

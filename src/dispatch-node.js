@@ -9,6 +9,7 @@ module.exports = DispatchNode = (function() {
     this._dispatchListeners = __bind(this._dispatchListeners, this);
     this._dispatchHandlers = __bind(this._dispatchHandlers, this);
     this.use = __bind(this.use, this);
+    this.clear = __bind(this.clear, this);
     this.remove = __bind(this.remove, this);
     this.match = __bind(this.match, this);
     this._find = __bind(this._find, this);
@@ -59,6 +60,11 @@ module.exports = DispatchNode = (function() {
       this._listeners.splice(index, 1);
     }
     return this;
+  };
+
+  DispatchNode.prototype.clear = function() {
+    this._handlers = [];
+    return this._listeners = [];
   };
 
   DispatchNode.prototype.use = function(handler) {

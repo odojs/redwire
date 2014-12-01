@@ -31,6 +31,10 @@ module.exports = class DispatchNode
       @_listeners.splice index, 1
     @
   
+  clear: =>
+    @_handlers = []
+    @_listeners = []
+  
   use: (handler) =>
     if Array.isArray handler
       @use h for h in handler

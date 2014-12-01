@@ -1,10 +1,12 @@
 http = require 'http'
 https = require 'https'
+net = require 'net'
+tls = require 'tls'
+
 http_proxy = require 'http-proxy'
 parse_url = require('url').parse
 format_url = require('url').format
 
-DispatchNode = require './dispatch-node'
 CertificateStore = require './certificate-store'
 LoadBalancer = require './load-balancer'
 Bindings = require './bindings'
@@ -26,6 +28,8 @@ module.exports = class RedWire
         port: 8080
         websockets: no
       https: no
+      tcp: no
+      tls: no
       proxy:
         xfwd: yes
         prependPath: no
@@ -35,6 +39,8 @@ module.exports = class RedWire
     
     @_startHttp() if @_options.http
     @_startHttps() if @_options.https
+    @_startTcp() if @_options.tcp
+    @_startTls() if @_options.tls
     @_startProxy() if @_options.proxy
   
   _parseSource: (req) =>
@@ -67,7 +73,7 @@ module.exports = class RedWire
   _startHttps: =>
     @certificates = new CertificateStore()
     
-    @_httpsServer = https.createServer @certificates.getServerOptions(@_options.https), (req, res) =>
+    @_httpsServer = https.createServer @certificates.getHttpsOptions(@_options.https), (req, res) =>
       req.source = @_parseSource req
       @_bindings._https.exec req.source.href, req, res, @_error404
     
@@ -82,6 +88,28 @@ module.exports = class RedWire
       #@log.error err, 'HTTPS Server Error' if @log?
       
     @_httpsServer.listen @_options.https.port or 8443
+  
+  _startTcp: =>
+    @_tcpServer = net.createServer (socket) =>
+      socket.on 'error', (args...) => @_tcpServer.emit 'error', args...
+      @_bindings._tcp.exec {}, socket, @tcpError 'No rules caught tcp connection'
+    
+    @_tcpServer.on 'error', (err) =>
+      console.log err
+      #@log.error err, 'TCP Server Error' if @log?
+    
+    @_tcpServer.listen @_options.tcp.port
+  
+  _startTls: =>
+    @_tlsServer = tls.createServer @certificates.getTlsOptions(@_options.tls), (socket) =>
+      socket.on 'error', (args...) => @_tlsServer.emit 'error', args...
+      @_bindings._tls.exec {}, socket, @tlsError 'No rules caught tls connection'
+    
+    @_tlsServer.on 'error', (err) =>
+      console.log err
+      #@log.error err, 'TCP Server Error' if @log?
+      
+    @_tlsServer.listen @_options.tls.port
   
   _startProxy: =>
     @_proxy = http_proxy.createProxyServer @_options.proxy
@@ -143,6 +171,47 @@ module.exports = class RedWire
     req.url = url
     @_proxy.ws req, socket, head, target: t
   
+  proxyTcp: (target) => (req, socket, next) =>
+    t = target
+    t = req.target if !t?
+    if t? and typeof t is 'string' and t.indexOf('tcp://')
+      t = "tcp://#{t}"
+    return @_tcpError req, socket, 'No server to proxy to' if !t?
+    
+    url = parse_url t
+    url =
+      host: url.hostname
+      port: url.port
+    
+    proxySock = net
+      .connect url
+      .on 'error', (args...) => @_tcpServer.emit 'error', args...
+      .on 'end', => socket.end()
+    proxySock.pipe(socket).pipe(proxySock)
+    socket.on 'end', => proxySock.end()
+  
+  proxyTls: (options, target) => (req, socket, next) =>
+    if !target?
+      target = options
+      options = null
+    
+    t = target
+    t = req.target if !t?
+    if t? and t.indexOf('tls://')
+      t = "tls://#{t}"
+    return @_tlsError req, socket, 'No server to proxy to' if !t?
+    
+    options = req if !options?
+    url = parse_url t
+    url =
+      host: url.hostname
+      port: url.port
+    
+    proxySock = tls
+      .connect options, url
+      .on 'error', (args...) => @_tlsServer.emit 'error', args...
+    proxySock.pipe(socket).pipe(proxySock)
+  
   _error404: (req, res) =>
     result =  message: "No http proxy setup for #{req.source.href}"
     res.writeHead 404, 'Content-Type': 'application/json'
@@ -158,6 +227,20 @@ module.exports = class RedWire
     res.end()
   
   error500: => (mount, url, req, res, next) => @_error500 req, res, ''
+  
+  _tcpError: (req, socket, message) =>
+    console.log message
+    socket.destroy()
+  
+  tcpError: (message) => (req, socket, next) =>
+    @_tcpError req, socket, message
+  
+  _tlsError: (req, socket, message) =>
+    console.log message
+    socket.destroy()
+  
+  tlsError: (message) => (req, socket, next) =>
+    @_tlsError req, socket, message
   
   _redirect301: (req, res, location) =>
     if location.indexOf('http://') isnt 0 and location.indexOf('https://') isnt 0
@@ -181,10 +264,19 @@ module.exports = class RedWire
   https: (url, target) => @_bindings.https url, target
   httpWs: (url, target) => @_bindings.httpWs url, target
   httpsWs: (url, target) => @_bindings.httpsWs url, target
+  tcp: (target) => @_bindings.tcp target
+  tls: (target) => @_bindings.tls target
   removeHttp: (url) => @_bindings.removeHttp url
   removeHttps: (url) => @_bindings.removeHttps url
   removeHttpWs: (url) => @_bindings.removeHttpWs url
   removeHttpsWs: (url) => @_bindings.removeHttpsWs url
+  clearHttp: => @_bindings.clearHttp()
+  clearHttps: => @_bindings.clearHttps()
+  clearHttpWs: => @_bindings.clearHttpWs()
+  clearHttpsWs: => @_bindings.clearHttpsWs()
+  clearTcp: => @_bindings.clearTcp()
+  clearTls: => @_bindings.clearTls()
+  clear: => @_bindings.clear()
   
   createNewBindings: => new Bindings @
   setBindings: (bindings) => @_bindings = bindings
@@ -193,5 +285,7 @@ module.exports = class RedWire
   close: (cb) =>
     @_httpServer.close() if @_httpServer?
     @_httpsServer.close() if @_httpsServer?
+    @_tcpServer.close() if @_tcpServer?
+    @_tlsServer.close() if @_tlsServer?
     @_proxy.close() if @_proxy?
     cb() if cb?
