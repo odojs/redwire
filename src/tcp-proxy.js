@@ -10,7 +10,7 @@ tls = require('tls');
 parse_url = require('url').parse;
 
 module.exports = TcpProxy = (function() {
-  function TcpProxy(options, redwire) {
+  function TcpProxy(options, bindings) {
     this.close = __bind(this.close, this);
     this.tlsError = __bind(this.tlsError, this);
     this._tlsError = __bind(this._tlsError, this);
@@ -21,7 +21,7 @@ module.exports = TcpProxy = (function() {
     this._startTls = __bind(this._startTls, this);
     this._startTcp = __bind(this._startTcp, this);
     this._options = options;
-    this._redwire = redwire;
+    this._bindings = bindings;
     if (this._options.tcp) {
       this._startTcp();
     }
@@ -38,7 +38,7 @@ module.exports = TcpProxy = (function() {
           args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
           return (_ref = _this._tcpServer).emit.apply(_ref, ['error'].concat(__slice.call(args)));
         });
-        return _this._redwire._bindings._tcp.exec({}, socket, _this.tcpError('No rules caught tcp connection'));
+        return _this._bindings()._tcp.exec({}, socket, _this.tcpError('No rules caught tcp connection'));
       };
     })(this));
     this._tcpServer.on('error', (function(_this) {
@@ -57,7 +57,7 @@ module.exports = TcpProxy = (function() {
           args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
           return (_ref = _this._tlsServer).emit.apply(_ref, ['error'].concat(__slice.call(args)));
         });
-        return _this._redwire._bindings._tls.exec({}, socket, _this.tlsError('No rules caught tls connection'));
+        return _this._bindings()._tls.exec({}, socket, _this.tlsError('No rules caught tls connection'));
       };
     })(this));
     this._tlsServer.on('error', (function(_this) {

@@ -19,7 +19,7 @@ CertificateStore = require('./certificate-store');
 LoadBalancer = require('./load-balancer');
 
 module.exports = WebProxy = (function() {
-  function WebProxy(options, redwire) {
+  function WebProxy(options, bindings) {
     this.close = __bind(this.close, this);
     this.redirect302 = __bind(this.redirect302, this);
     this._redirect302 = __bind(this._redirect302, this);
@@ -41,7 +41,7 @@ module.exports = WebProxy = (function() {
     this._translateUrl = __bind(this._translateUrl, this);
     this._parseSource = __bind(this._parseSource, this);
     this._options = options;
-    this._redwire = redwire;
+    this._bindings = bindings;
     if (this._options.http) {
       this._startHttp();
     }
@@ -77,14 +77,14 @@ module.exports = WebProxy = (function() {
     this._httpServer = http.createServer((function(_this) {
       return function(req, res) {
         req.source = _this._parseSource(req);
-        return _this._redwire._bindings._http.exec(req.source.href, req, res, _this._error404);
+        return _this._bindings()._http.exec(req.source.href, req, res, _this._error404);
       };
     })(this));
     if (this._options.http.websockets) {
       this._httpServer.on('upgrade', (function(_this) {
         return function(req, socket, head) {
           req.source = _this._parseSource(req);
-          return _this._redwire._bindings._httpWs.exec(req.source.href, req, socket, head, _this._error404);
+          return _this._bindings()._httpWs.exec(req.source.href, req, socket, head, _this._error404);
         };
       })(this));
     }
@@ -101,14 +101,14 @@ module.exports = WebProxy = (function() {
     this._httpsServer = https.createServer(this.certificates.getHttpsOptions(this._options.https), (function(_this) {
       return function(req, res) {
         req.source = _this._parseSource(req);
-        return _this._redwire._bindings._https.exec(req.source.href, req, res, _this._error404);
+        return _this._bindings()._https.exec(req.source.href, req, res, _this._error404);
       };
     })(this));
     if (this._options.https.websockets) {
       this._httpsServer.on('upgrade', (function(_this) {
         return function(req, socket, head) {
           req.source = _this._parseSource(req);
-          return _this._redwire._bindings._httpsWs.exec(req.source.href, req, socket, head, _this._error404);
+          return _this._bindings()._httpsWs.exec(req.source.href, req, socket, head, _this._error404);
         };
       })(this));
     }

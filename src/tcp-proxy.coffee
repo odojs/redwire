@@ -3,9 +3,9 @@ tls = require 'tls'
 parse_url = require('url').parse
 
 module.exports = class TcpProxy
-  constructor: (options, redwire) ->
+  constructor: (options, bindings) ->
     @_options = options
-    @_redwire = redwire
+    @_bindings = bindings
     
     @_startTcp() if @_options.tcp
     @_startTls() if @_options.tls
@@ -13,7 +13,7 @@ module.exports = class TcpProxy
   _startTcp: =>
     @_tcpServer = net.createServer (socket) =>
       socket.on 'error', (args...) => @_tcpServer.emit 'error', args...
-      @_redwire._bindings._tcp.exec {}, socket, @tcpError 'No rules caught tcp connection'
+      @_bindings()._tcp.exec {}, socket, @tcpError 'No rules caught tcp connection'
     
     @_tcpServer.on 'error', (err) =>
       console.log err
@@ -24,7 +24,7 @@ module.exports = class TcpProxy
   _startTls: =>
     @_tlsServer = tls.createServer @certificates.getTlsOptions(@_options.tls), (socket) =>
       socket.on 'error', (args...) => @_tlsServer.emit 'error', args...
-      @_redwire._bindings._tls.exec {}, socket, @tlsError 'No rules caught tls connection'
+      @_bindings()._tls.exec {}, socket, @tlsError 'No rules caught tls connection'
     
     @_tlsServer.on 'error', (err) =>
       console.log err

@@ -8,9 +8,9 @@ CertificateStore = require './certificate-store'
 LoadBalancer = require './load-balancer'
 
 module.exports = class WebProxy
-  constructor: (options, redwire) ->
+  constructor: (options, bindings) ->
     @_options = options
-    @_redwire = redwire
+    @_bindings = bindings
     
     @_startHttp() if @_options.http
     @_startHttps() if @_options.https
@@ -36,12 +36,12 @@ module.exports = class WebProxy
   _startHttp: =>
     @_httpServer = http.createServer (req, res) =>
       req.source = @_parseSource req
-      @_redwire._bindings._http.exec req.source.href, req, res, @_error404
+      @_bindings()._http.exec req.source.href, req, res, @_error404
     
     if @_options.http.websockets
       @_httpServer.on 'upgrade', (req, socket, head) =>
         req.source = @_parseSource req
-        @_redwire._bindings._httpWs.exec req.source.href, req, socket, head, @_error404
+        @_bindings()._httpWs.exec req.source.href, req, socket, head, @_error404
     
     @_httpServer.on 'error', (err) =>
       console.log err
@@ -54,18 +54,18 @@ module.exports = class WebProxy
     
     @_httpsServer = https.createServer @certificates.getHttpsOptions(@_options.https), (req, res) =>
       req.source = @_parseSource req
-      @_redwire._bindings._https.exec req.source.href, req, res, @_error404
+      @_bindings()._https.exec req.source.href, req, res, @_error404
     
     if @_options.https.websockets
       @_httpsServer.on 'upgrade', (req, socket, head) =>
         req.source = @_parseSource req
-        @_redwire._bindings._httpsWs.exec req.source.href, req, socket, head, @_error404
+        @_bindings()._httpsWs.exec req.source.href, req, socket, head, @_error404
     
     @_httpsServer.on 'error', (err, req, res) =>
       @_error500 req, res, err
       console.log err
       #@log.error err, 'HTTPS Server Error' if @log?
-      
+    
     @_httpsServer.listen @_options.https.port or 8443
   
   _startProxy: =>
