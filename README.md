@@ -108,6 +108,17 @@ var options = {
     proxy: {
         xfwd: yes,
         prependPath: no
+    },
+    log: {
+        debug: function() {},
+        notice: function() {},
+        error: function(err) {
+            if (err.stack) {
+                console.error(err.stack);
+            } else {
+                console.error(err);
+            }
+        }
     }
 };
 var redwire = new RedWire(options);
@@ -119,6 +130,8 @@ When websockets are enabled use `redwire.httpWs` to setup routes and middleware 
 RedWire is often most useful handing request on port 80. If this is required your NodeJs application will need to run as root.
 
 ### HTTPS Configuration
+
+SNI (multiple ssl certificates) is supported by Internet Explorer 7 and above.
 
 ```js
 // a default certificate is required

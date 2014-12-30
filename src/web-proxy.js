@@ -74,6 +74,7 @@ module.exports = WebProxy = (function() {
   };
 
   WebProxy.prototype._startHttp = function() {
+    this._options.http.port = this._options.http.port || 8080;
     this._httpServer = http.createServer((function(_this) {
       return function(req, res) {
         req.source = _this._parseSource(req);
@@ -81,6 +82,7 @@ module.exports = WebProxy = (function() {
       };
     })(this));
     if (this._options.http.websockets) {
+      this._options.log.notice('http server configured for websockets');
       this._httpServer.on('upgrade', (function(_this) {
         return function(req, socket, head) {
           req.source = _this._parseSource(req);
@@ -89,15 +91,18 @@ module.exports = WebProxy = (function() {
       })(this));
     }
     this._httpServer.on('error', (function(_this) {
-      return function(err) {
-        return console.log(err);
+      return function(err, req, res) {
+        _this._error500(req, res, err);
+        return _this._options.log.error(err);
       };
     })(this));
-    return this._httpServer.listen(this._options.http.port || 8080);
+    this._httpServer.listen(this._options.http.port);
+    return this._options.log.notice("http server listening on port " + (this._options.http.port || 8080));
   };
 
   WebProxy.prototype._startHttps = function() {
     this.certificates = new CertificateStore();
+    this._options.https.port = this._options.https.port || 8443;
     this._httpsServer = https.createServer(this.certificates.getHttpsOptions(this._options.https), (function(_this) {
       return function(req, res) {
         req.source = _this._parseSource(req);
@@ -105,6 +110,7 @@ module.exports = WebProxy = (function() {
       };
     })(this));
     if (this._options.https.websockets) {
+      this._options.log.notice("https server configured for websockets");
       this._httpsServer.on('upgrade', (function(_this) {
         return function(req, socket, head) {
           req.source = _this._parseSource(req);
@@ -115,10 +121,11 @@ module.exports = WebProxy = (function() {
     this._httpsServer.on('error', (function(_this) {
       return function(err, req, res) {
         _this._error500(req, res, err);
-        return console.log(err);
+        return _this._options.log.error(err);
       };
     })(this));
-    return this._httpsServer.listen(this._options.https.port || 8443);
+    this._httpsServer.listen(this._options.https.port);
+    return this._options.log.notice("https server listening on port " + this._options.https.port);
   };
 
   WebProxy.prototype._startProxy = function() {

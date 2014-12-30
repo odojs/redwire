@@ -34,39 +34,46 @@ module.exports = class WebProxy
     "#{target.pathname}#{url.path[mount.pathname.length..]}"
   
   _startHttp: =>
+    @_options.http.port = @_options.http.port or 8080
+    
     @_httpServer = http.createServer (req, res) =>
       req.source = @_parseSource req
       @_bindings()._http.exec req.source.href, req, res, @_error404
     
     if @_options.http.websockets
+      @_options.log.notice 'http server configured for websockets'
       @_httpServer.on 'upgrade', (req, socket, head) =>
         req.source = @_parseSource req
         @_bindings()._httpWs.exec req.source.href, req, socket, head, @_error404
     
-    @_httpServer.on 'error', (err) =>
-      console.log err
-      #@log.error err, 'Server Error' if @log?
+    @_httpServer.on 'error', (err, req, res) =>
+      @_error500 req, res, err
+      @_options.log.error err
     
-    @_httpServer.listen @_options.http.port or 8080
+    @_httpServer.listen @_options.http.port
+    @_options.log.notice "http server listening on port #{@_options.http.port or 8080}"
   
   _startHttps: =>
     @certificates = new CertificateStore()
+    
+    @_options.https.port = @_options.https.port or 8443
     
     @_httpsServer = https.createServer @certificates.getHttpsOptions(@_options.https), (req, res) =>
       req.source = @_parseSource req
       @_bindings()._https.exec req.source.href, req, res, @_error404
     
     if @_options.https.websockets
+      @_options.log.notice "https server configured for websockets"
       @_httpsServer.on 'upgrade', (req, socket, head) =>
         req.source = @_parseSource req
         @_bindings()._httpsWs.exec req.source.href, req, socket, head, @_error404
     
     @_httpsServer.on 'error', (err, req, res) =>
       @_error500 req, res, err
-      console.log err
-      #@log.error err, 'HTTPS Server Error' if @log?
+      @_options.log.error err
     
-    @_httpsServer.listen @_options.https.port or 8443
+    @_httpsServer.listen @_options.https.port
+    @_options.log.notice "https server listening on port #{@_options.https.port}"
   
   _startProxy: =>
     @_proxy = http_proxy.createProxyServer @_options.proxy

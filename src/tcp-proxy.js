@@ -41,12 +41,9 @@ module.exports = TcpProxy = (function() {
         return _this._bindings()._tcp.exec({}, socket, _this.tcpError('No rules caught tcp connection'));
       };
     })(this));
-    this._tcpServer.on('error', (function(_this) {
-      return function(err) {
-        return console.log(err);
-      };
-    })(this));
-    return this._tcpServer.listen(this._options.tcp.port);
+    this._tcpServer.on('error', this._options.log.error);
+    this._tcpServer.listen(this._options.tcp.port);
+    return this._options.log.notice("tcp server listening on port " + this._options.tcp.port);
   };
 
   TcpProxy.prototype._startTls = function() {
@@ -60,12 +57,9 @@ module.exports = TcpProxy = (function() {
         return _this._bindings()._tls.exec({}, socket, _this.tlsError('No rules caught tls connection'));
       };
     })(this));
-    this._tlsServer.on('error', (function(_this) {
-      return function(err) {
-        return console.log(err);
-      };
-    })(this));
-    return this._tlsServer.listen(this._options.tls.port);
+    this._tlsServer.on('error', this._options.log.error);
+    this._tlsServer.listen(this._options.tls.port);
+    return this._options.log.notice("tls server listening on port " + this._options.tls.port);
   };
 
   TcpProxy.prototype.proxyTcp = function(target) {
@@ -139,7 +133,7 @@ module.exports = TcpProxy = (function() {
   };
 
   TcpProxy.prototype._tcpError = function(req, socket, message) {
-    console.log(message);
+    this._options.log.error(message);
     return socket.destroy();
   };
 
@@ -152,7 +146,7 @@ module.exports = TcpProxy = (function() {
   };
 
   TcpProxy.prototype._tlsError = function(req, socket, message) {
-    console.log(message);
+    this._options.log.error(message);
     return socket.destroy();
   };
 

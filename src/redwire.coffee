@@ -24,6 +24,15 @@ module.exports = class RedWire
       proxy:
         xfwd: yes
         prependPath: no
+      log:
+        debug: ->
+        notice: ->
+        error: (err) ->
+          if err.stack
+            console.error err.stack
+          else
+            console.error err
+    
     copy options, @_options
     
     @_bindings = @createNewBindings()

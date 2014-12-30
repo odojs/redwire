@@ -68,6 +68,17 @@ module.exports = RedWire = (function() {
       proxy: {
         xfwd: true,
         prependPath: false
+      },
+      log: {
+        debug: function() {},
+        notice: function() {},
+        error: function(err) {
+          if (err.stack) {
+            return console.error(err.stack);
+          } else {
+            return console.error(err);
+          }
+        }
       }
     };
     copy(options, this._options);

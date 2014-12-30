@@ -15,22 +15,20 @@ module.exports = class TcpProxy
       socket.on 'error', (args...) => @_tcpServer.emit 'error', args...
       @_bindings()._tcp.exec {}, socket, @tcpError 'No rules caught tcp connection'
     
-    @_tcpServer.on 'error', (err) =>
-      console.log err
-      #@log.error err, 'TCP Server Error' if @log?
+    @_tcpServer.on 'error', @_options.log.error
     
     @_tcpServer.listen @_options.tcp.port
+    @_options.log.notice "tcp server listening on port #{@_options.tcp.port}"
   
   _startTls: =>
     @_tlsServer = tls.createServer @certificates.getTlsOptions(@_options.tls), (socket) =>
       socket.on 'error', (args...) => @_tlsServer.emit 'error', args...
       @_bindings()._tls.exec {}, socket, @tlsError 'No rules caught tls connection'
     
-    @_tlsServer.on 'error', (err) =>
-      console.log err
-      #@log.error err, 'TCP Server Error' if @log?
+    @_tlsServer.on 'error', @_options.log.error
       
     @_tlsServer.listen @_options.tls.port
+    @_options.log.notice "tls server listening on port #{@_options.tls.port}"
   
   proxyTcp: (target) => (req, socket, next) =>
     t = target
@@ -74,14 +72,14 @@ module.exports = class TcpProxy
     proxySock.pipe(socket).pipe(proxySock)
   
   _tcpError: (req, socket, message) =>
-    console.log message
+    @_options.log.error message
     socket.destroy()
   
   tcpError: (message) => (req, socket, next) =>
     @_tcpError req, socket, message
   
   _tlsError: (req, socket, message) =>
-    console.log message
+    @_options.log.error message
     socket.destroy()
   
   tlsError: (message) => (req, socket, next) =>
