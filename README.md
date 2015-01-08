@@ -188,7 +188,6 @@ Are you using RedWire for something that isn't on this list? Let us know!
 
 ## TODO
 
-- Logging strategy
 - Tests for https
 - Tests for ws
 - Tests for removing dispatch nodes
