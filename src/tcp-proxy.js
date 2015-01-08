@@ -20,6 +20,7 @@ module.exports = TcpProxy = (function() {
     this.proxyTcp = __bind(this.proxyTcp, this);
     this._startTls = __bind(this._startTls, this);
     this._startTcp = __bind(this._startTcp, this);
+    var _ref, _ref1;
     this._options = options;
     this._bindings = bindings;
     if (this._options.tcp) {
@@ -27,6 +28,20 @@ module.exports = TcpProxy = (function() {
     }
     if (this._options.tls) {
       this._startTls();
+    }
+    if (((_ref = this._options.tcp) != null ? _ref.dest : void 0) != null) {
+      setTimeout((function(_this) {
+        return function() {
+          return _this._bindings().tcp(_this._options.tcp.dest);
+        };
+      })(this), 1);
+    }
+    if (((_ref1 = this._options.tls) != null ? _ref1.dest : void 0) != null) {
+      setTimeout((function(_this) {
+        return function() {
+          return _this._bindings().tls(_this._options.tls.dest);
+        };
+      })(this), 1);
     }
   }
 

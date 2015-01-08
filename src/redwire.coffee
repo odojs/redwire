@@ -78,6 +78,8 @@ module.exports = class RedWire
   getBindings: => @_bindings
   
   close: (cb) =>
-    @_webProxy.close() if @_webProxy?
-    @_tcpProxy.close() if @_tcpProxy?
+    try
+      @_webProxy.close() if @_webProxy?
+      @_tcpProxy.close() if @_tcpProxy?
+    catch e
     cb() if cb?

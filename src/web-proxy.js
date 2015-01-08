@@ -40,6 +40,7 @@ module.exports = WebProxy = (function() {
     this._startHttp = __bind(this._startHttp, this);
     this._translateUrl = __bind(this._translateUrl, this);
     this._parseSource = __bind(this._parseSource, this);
+    var _ref, _ref1;
     this._options = options;
     this._bindings = bindings;
     if (this._options.http) {
@@ -50,6 +51,34 @@ module.exports = WebProxy = (function() {
     }
     if (this._options.proxy) {
       this._startProxy();
+    }
+    if (((_ref = this._options.http) != null ? _ref.routes : void 0) != null) {
+      setTimeout((function(_this) {
+        return function() {
+          var source, target, _ref1, _results;
+          _ref1 = _this._options.http.routes;
+          _results = [];
+          for (source in _ref1) {
+            target = _ref1[source];
+            _results.push(_this._bindings().http(source, target));
+          }
+          return _results;
+        };
+      })(this), 1);
+    }
+    if (((_ref1 = this._options.https) != null ? _ref1.routes : void 0) != null) {
+      setTimeout((function(_this) {
+        return function() {
+          var source, target, _ref2, _results;
+          _ref2 = _this._options.https.routes;
+          _results = [];
+          for (source in _ref2) {
+            target = _ref2[source];
+            _results.push(_this._bindings().https(source, target));
+          }
+          return _results;
+        };
+      })(this), 1);
     }
   }
 
@@ -92,7 +121,9 @@ module.exports = WebProxy = (function() {
     }
     this._httpServer.on('error', (function(_this) {
       return function(err, req, res) {
-        _this._error500(req, res, err);
+        if ((req != null) && (res != null)) {
+          _this._error500(req, res, err);
+        }
         return _this._options.log.error(err);
       };
     })(this));
@@ -120,7 +151,9 @@ module.exports = WebProxy = (function() {
     }
     this._httpsServer.on('error', (function(_this) {
       return function(err, req, res) {
-        _this._error500(req, res, err);
+        if ((req != null) && (res != null)) {
+          _this._error500(req, res, err);
+        }
         return _this._options.log.error(err);
       };
     })(this));
@@ -139,9 +172,10 @@ module.exports = WebProxy = (function() {
     })(this));
     return this._proxy.on('error', (function(_this) {
       return function(err, req, res) {
-        if (!res.headersSent) {
-          return _this._error500(req, res, err);
+        if ((req != null) && (typeof res === "function" ? res(!res.headersSent) : void 0)) {
+          _this._error500(req, res, err);
         }
+        return _this._options.log.error(err);
       };
     })(this));
   };

@@ -248,11 +248,16 @@ module.exports = RedWire = (function() {
   };
 
   RedWire.prototype.close = function(cb) {
-    if (this._webProxy != null) {
-      this._webProxy.close();
-    }
-    if (this._tcpProxy != null) {
-      this._tcpProxy.close();
+    var e;
+    try {
+      if (this._webProxy != null) {
+        this._webProxy.close();
+      }
+      if (this._tcpProxy != null) {
+        this._tcpProxy.close();
+      }
+    } catch (_error) {
+      e = _error;
     }
     if (cb != null) {
       return cb();

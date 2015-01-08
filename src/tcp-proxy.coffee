@@ -9,6 +9,16 @@ module.exports = class TcpProxy
     
     @_startTcp() if @_options.tcp
     @_startTls() if @_options.tls
+    
+    if @_options.tcp?.dest?
+      setTimeout =>
+        @_bindings().tcp @_options.tcp.dest
+      , 1
+    
+    if @_options.tls?.dest?
+      setTimeout =>
+        @_bindings().tls @_options.tls.dest
+      , 1
   
   _startTcp: =>
     @_tcpServer = net.createServer (socket) =>

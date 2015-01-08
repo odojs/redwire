@@ -15,6 +15,18 @@ module.exports = class WebProxy
     @_startHttp() if @_options.http
     @_startHttps() if @_options.https
     @_startProxy() if @_options.proxy
+    
+    if @_options.http?.routes?
+      setTimeout =>
+        for source, target of @_options.http.routes
+          @_bindings().http source, target
+      , 1
+    
+    if @_options.https?.routes?
+      setTimeout =>
+        for source, target of @_options.https.routes
+          @_bindings().https source, target
+      , 1
   
   _parseSource: (req) =>
     source = parse_url req.url
@@ -47,7 +59,7 @@ module.exports = class WebProxy
         @_bindings()._httpWs.exec req.source.href, req, socket, head, @_error404
     
     @_httpServer.on 'error', (err, req, res) =>
-      @_error500 req, res, err
+      @_error500 req, res, err if req? and res?
       @_options.log.error err
     
     @_httpServer.listen @_options.http.port
@@ -69,7 +81,7 @@ module.exports = class WebProxy
         @_bindings()._httpsWs.exec req.source.href, req, socket, head, @_error404
     
     @_httpsServer.on 'error', (err, req, res) =>
-      @_error500 req, res, err
+      @_error500 req, res, err if req? and res?
       @_options.log.error err
     
     @_httpsServer.listen @_options.https.port
@@ -80,8 +92,8 @@ module.exports = class WebProxy
     @_proxy.on 'proxyReq', (p, req, res, options) =>
       p.setHeader 'host', req.host if req.host?
     @_proxy.on 'error', (err, req, res) =>
-      @_error500 req, res, err if !res.headersSent
-      #@log.error err, 'Proxy Error' if @log?
+      @_error500 req, res, err if req? and res? !res.headersSent
+      @_options.log.error err
   
   proxy: (target) => (mount, url, req, res, next) =>
     t = target
