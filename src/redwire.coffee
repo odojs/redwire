@@ -15,9 +15,7 @@ module.exports = class RedWire
   constructor: (options) ->
     # Default options
     @_options =
-      http:
-        port: 8080
-        websockets: no
+      http: no
       https: no
       tcp: no
       tls: no

@@ -58,10 +58,7 @@ module.exports = RedWire = (function() {
     this.sslRedirect = __bind(this.sslRedirect, this);
     this.setHost = __bind(this.setHost, this);
     this._options = {
-      http: {
-        port: 8080,
-        websockets: false
-      },
+      http: false,
       https: false,
       tcp: false,
       tls: false,
