@@ -39,6 +39,28 @@ module.exports = class WebProxy
     source.slashes = yes
     source
   
+  _parseHostPort: (options, defaulthost, defaultport) =>
+    result =
+      port: defaultport
+      hostname: defaulthost
+    if options.port?
+      if typeof options.port is 'string' and options.port.indexOf(':') isnt -1
+        chunks = options.port.split ':'
+        result.hostname = chunks[0]
+        result.port = chunks[1]
+      else
+        result.port = options.port
+    
+    if options.hostname?
+      if typeof options.hostname is 'string' and options.hostname.indexOf(':') isnt -1
+        chunks = options.hostname.split ':'
+        result.hostname = chunks[0]
+        result.port = chunks[1]
+      else
+        result.hostname = options.hostname
+    
+    result
+  
   _translateUrl: (mount, target, url) =>
     mount = parse_url mount
     target = parse_url target
@@ -46,11 +68,9 @@ module.exports = class WebProxy
     "#{target.pathname}#{url.path[mount.pathname.length..]}"
   
   _startHttp: =>
-    @_options.http.port = @_options.http.port or 8080
-    if typeof @_options.http.port is 'string' and @_options.http.port.indexOf(':') isnt -1
-      chunks = @_options.http.port.split ':'
-      @_options.http.hostname = chunks[0]
-      @_options.http.port = chunks[1]
+    bind = @_parseHostPort @_options.http, '0.0.0.0', 8080
+    @_options.http.port = bind.port
+    @_options.http.hostname = bind.hostname
     
     @_httpServer = http.createServer (req, res) =>
       req.source = @_parseSource req
@@ -66,20 +86,15 @@ module.exports = class WebProxy
       @_error500 req, res, err if req? and res?
       @_options.log.error err
     
-    if @_options.http.hostname?
-      @_httpServer.listen @_options.http.port, @_options.http.hostname
-    else
-      @_httpServer.listen @_options.http.port
-    @_options.log.notice "http server listening on port #{@_options.http.port or 8080}"
+    @_httpServer.listen @_options.http.port, @_options.http.hostname
+    @_options.log.notice "http server listening on #{@_options.http.hostname}#{@_options.http.port}"
   
   _startHttps: =>
     @certificates = new CertificateStore()
     
-    @_options.https.port = @_options.https.port or 8443
-    if typeof @_options.https.port is 'string' and @_options.https.port.indexOf(':') isnt -1
-      chunks = @_options.https.port.split ':'
-      @_options.https.hostname = chunks[0]
-      @_options.https.port = chunks[1]
+    bind = @_parseHostPort @_options.https, '0.0.0.0', 8443
+    @_options.https.port = bind.port
+    @_options.https.hostname = bind.hostname
     
     @_httpsServer = https.createServer @certificates.getHttpsOptions(@_options.https), (req, res) =>
       req.source = @_parseSource req
@@ -95,11 +110,8 @@ module.exports = class WebProxy
       @_error500 req, res, err if req? and res?
       @_options.log.error err
     
-    if @_options.https.hostname?
-      @_httpsServer.listen @_options.https.port, @_options.https.hostname
-    else
-      @_httpsServer.listen @_options.https.port
-    @_options.log.notice "https server listening on port #{@_options.https.port}"
+    @_httpsServer.listen @_options.https.port, @_options.https.hostname
+    @_options.log.notice "https server listening on #{@_options.https.hostname}#{@_options.https.port}"
   
   _startProxy: =>
     @_proxy = http_proxy.createProxyServer @_options.proxy

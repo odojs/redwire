@@ -39,6 +39,7 @@ module.exports = WebProxy = (function() {
     this._startHttps = __bind(this._startHttps, this);
     this._startHttp = __bind(this._startHttp, this);
     this._translateUrl = __bind(this._translateUrl, this);
+    this._parseHostPort = __bind(this._parseHostPort, this);
     this._parseSource = __bind(this._parseSource, this);
     var _ref, _ref1;
     this._options = options;
@@ -95,6 +96,33 @@ module.exports = WebProxy = (function() {
     return source;
   };
 
+  WebProxy.prototype._parseHostPort = function(options, defaulthost, defaultport) {
+    var chunks, result;
+    result = {
+      port: defaultport,
+      hostname: defaulthost
+    };
+    if (options.port != null) {
+      if (typeof options.port === 'string' && options.port.indexOf(':') !== -1) {
+        chunks = options.port.split(':');
+        result.hostname = chunks[0];
+        result.port = chunks[1];
+      } else {
+        result.port = options.port;
+      }
+    }
+    if (options.hostname != null) {
+      if (typeof options.hostname === 'string' && options.hostname.indexOf(':') !== -1) {
+        chunks = options.hostname.split(':');
+        result.hostname = chunks[0];
+        result.port = chunks[1];
+      } else {
+        result.hostname = options.hostname;
+      }
+    }
+    return result;
+  };
+
   WebProxy.prototype._translateUrl = function(mount, target, url) {
     mount = parse_url(mount);
     target = parse_url(target);
@@ -103,13 +131,10 @@ module.exports = WebProxy = (function() {
   };
 
   WebProxy.prototype._startHttp = function() {
-    var chunks;
-    this._options.http.port = this._options.http.port || 8080;
-    if (typeof this._options.http.port === 'string' && this._options.http.port.indexOf(':') !== -1) {
-      chunks = this._options.http.port.split(':');
-      this._options.http.hostname = chunks[0];
-      this._options.http.port = chunks[1];
-    }
+    var bind;
+    bind = this._parseHostPort(this._options.http, '0.0.0.0', 8080);
+    this._options.http.port = bind.port;
+    this._options.http.hostname = bind.hostname;
     this._httpServer = http.createServer((function(_this) {
       return function(req, res) {
         req.source = _this._parseSource(req);
@@ -133,23 +158,16 @@ module.exports = WebProxy = (function() {
         return _this._options.log.error(err);
       };
     })(this));
-    if (this._options.http.hostname != null) {
-      this._httpServer.listen(this._options.http.port, this._options.http.hostname);
-    } else {
-      this._httpServer.listen(this._options.http.port);
-    }
-    return this._options.log.notice("http server listening on port " + (this._options.http.port || 8080));
+    this._httpServer.listen(this._options.http.port, this._options.http.hostname);
+    return this._options.log.notice("http server listening on " + this._options.http.hostname + this._options.http.port);
   };
 
   WebProxy.prototype._startHttps = function() {
-    var chunks;
+    var bind;
     this.certificates = new CertificateStore();
-    this._options.https.port = this._options.https.port || 8443;
-    if (typeof this._options.https.port === 'string' && this._options.https.port.indexOf(':') !== -1) {
-      chunks = this._options.https.port.split(':');
-      this._options.https.hostname = chunks[0];
-      this._options.https.port = chunks[1];
-    }
+    bind = this._parseHostPort(this._options.https, '0.0.0.0', 8443);
+    this._options.https.port = bind.port;
+    this._options.https.hostname = bind.hostname;
     this._httpsServer = https.createServer(this.certificates.getHttpsOptions(this._options.https), (function(_this) {
       return function(req, res) {
         req.source = _this._parseSource(req);
@@ -173,12 +191,8 @@ module.exports = WebProxy = (function() {
         return _this._options.log.error(err);
       };
     })(this));
-    if (this._options.https.hostname != null) {
-      this._httpsServer.listen(this._options.https.port, this._options.https.hostname);
-    } else {
-      this._httpsServer.listen(this._options.https.port);
-    }
-    return this._options.log.notice("https server listening on port " + this._options.https.port);
+    this._httpsServer.listen(this._options.https.port, this._options.https.hostname);
+    return this._options.log.notice("https server listening on " + this._options.https.hostname + this._options.https.port);
   };
 
   WebProxy.prototype._startProxy = function() {
