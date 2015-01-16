@@ -145,7 +145,7 @@ module.exports = WebProxy = (function() {
     var chunks;
     this.certificates = new CertificateStore();
     this._options.https.port = this._options.https.port || 8443;
-    if (typeof this._options.https.port === 'string' && this._options.https.portindexOf(':') !== -1) {
+    if (typeof this._options.https.port === 'string' && this._options.https.port.indexOf(':') !== -1) {
       chunks = this._options.https.port.split(':');
       this._options.https.hostname = chunks[0];
       this._options.https.port = chunks[1];
