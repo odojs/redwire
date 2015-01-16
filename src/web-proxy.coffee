@@ -47,7 +47,7 @@ module.exports = class WebProxy
   
   _startHttp: =>
     @_options.http.port = @_options.http.port or 8080
-    if @_options.http.port.indexOf(':') isnt -1
+    if @_options.http.port is 'string' and @_options.http.port.indexOf(':') isnt -1
       chunks = @_options.http.port.split ':'
       @_options.http.hostname = chunks[0]
       @_options.http.port = chunks[1]
@@ -76,7 +76,7 @@ module.exports = class WebProxy
     @certificates = new CertificateStore()
     
     @_options.https.port = @_options.https.port or 8443
-    if @_options.https.port.indexOf(':') isnt -1
+    if @_options.https.port is 'string' and @_options.https.portindexOf(':') isnt -1
       chunks = @_options.https.port.split ':'
       @_options.https.hostname = chunks[0]
       @_options.https.port = chunks[1]
