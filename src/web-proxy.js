@@ -103,7 +103,13 @@ module.exports = WebProxy = (function() {
   };
 
   WebProxy.prototype._startHttp = function() {
+    var chunks;
     this._options.http.port = this._options.http.port || 8080;
+    if (this._options.http.port.indexOf(':') !== -1) {
+      chunks = this._options.http.port.split(':');
+      this._options.http.hostname = chunks[0];
+      this._options.http.port = chunks[1];
+    }
     this._httpServer = http.createServer((function(_this) {
       return function(req, res) {
         req.source = _this._parseSource(req);
@@ -127,13 +133,23 @@ module.exports = WebProxy = (function() {
         return _this._options.log.error(err);
       };
     })(this));
-    this._httpServer.listen(this._options.http.port);
+    if (this._options.http.hostname != null) {
+      this._httpServer.listen(this._options.http.port, this._options.http.hostname);
+    } else {
+      this._httpServer.listen(this._options.http.port);
+    }
     return this._options.log.notice("http server listening on port " + (this._options.http.port || 8080));
   };
 
   WebProxy.prototype._startHttps = function() {
+    var chunks;
     this.certificates = new CertificateStore();
     this._options.https.port = this._options.https.port || 8443;
+    if (this._options.https.port.indexOf(':') !== -1) {
+      chunks = this._options.https.port.split(':');
+      this._options.https.hostname = chunks[0];
+      this._options.https.port = chunks[1];
+    }
     this._httpsServer = https.createServer(this.certificates.getHttpsOptions(this._options.https), (function(_this) {
       return function(req, res) {
         req.source = _this._parseSource(req);
@@ -157,7 +173,11 @@ module.exports = WebProxy = (function() {
         return _this._options.log.error(err);
       };
     })(this));
-    this._httpsServer.listen(this._options.https.port);
+    if (this._options.https.hostname != null) {
+      this._httpsServer.listen(this._options.https.port, this._options.https.hostname);
+    } else {
+      this._httpsServer.listen(this._options.https.port);
+    }
     return this._options.log.notice("https server listening on port " + this._options.https.port);
   };
 
