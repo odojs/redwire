@@ -87,7 +87,7 @@ module.exports = class WebProxy
       @_options.log.error err
     
     @_httpServer.listen @_options.http.port, @_options.http.hostname
-    @_options.log.notice "http server listening on #{@_options.http.hostname}#{@_options.http.port}"
+    @_options.log.notice "http server listening on #{@_options.http.hostname}:#{@_options.http.port}"
   
   _startHttps: =>
     @certificates = new CertificateStore()
@@ -111,7 +111,7 @@ module.exports = class WebProxy
       @_options.log.error err
     
     @_httpsServer.listen @_options.https.port, @_options.https.hostname
-    @_options.log.notice "https server listening on #{@_options.https.hostname}#{@_options.https.port}"
+    @_options.log.notice "https server listening on #{@_options.https.hostname}:#{@_options.https.port}"
   
   _startProxy: =>
     @_proxy = http_proxy.createProxyServer @_options.proxy

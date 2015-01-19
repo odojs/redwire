@@ -159,7 +159,7 @@ module.exports = WebProxy = (function() {
       };
     })(this));
     this._httpServer.listen(this._options.http.port, this._options.http.hostname);
-    return this._options.log.notice("http server listening on " + this._options.http.hostname + this._options.http.port);
+    return this._options.log.notice("http server listening on " + this._options.http.hostname + ":" + this._options.http.port);
   };
 
   WebProxy.prototype._startHttps = function() {
@@ -192,7 +192,7 @@ module.exports = WebProxy = (function() {
       };
     })(this));
     this._httpsServer.listen(this._options.https.port, this._options.https.hostname);
-    return this._options.log.notice("https server listening on " + this._options.https.hostname + this._options.https.port);
+    return this._options.log.notice("https server listening on " + this._options.https.hostname + ":" + this._options.https.port);
   };
 
   WebProxy.prototype._startProxy = function() {
