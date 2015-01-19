@@ -28,9 +28,9 @@ module.exports = class WebProxy
           @_bindings().https source, target
       , 1
   
-  _parseSource: (req) =>
+  _parseSource: (req, protocol) =>
     source = parse_url req.url
-    source.protocol = 'http:'
+    source.protocol = protocol
     source.host = req.headers.host
     chunks = source.host.split ':'
     source.hostname = chunks[0]
@@ -73,13 +73,13 @@ module.exports = class WebProxy
     @_options.http.hostname = bind.hostname
     
     @_httpServer = http.createServer (req, res) =>
-      req.source = @_parseSource req
+      req.source = @_parseSource req, 'http:'
       @_bindings()._http.exec req.source.href, req, res, @_error404
     
     if @_options.http.websockets
       @_options.log.notice 'http server configured for websockets'
       @_httpServer.on 'upgrade', (req, socket, head) =>
-        req.source = @_parseSource req
+        req.source = @_parseSource req, 'http:'
         @_bindings()._httpWs.exec req.source.href, req, socket, head, @_error404
     
     @_httpServer.on 'error', (err, req, res) =>
@@ -97,13 +97,13 @@ module.exports = class WebProxy
     @_options.https.hostname = bind.hostname
     
     @_httpsServer = https.createServer @certificates.getHttpsOptions(@_options.https), (req, res) =>
-      req.source = @_parseSource req
+      req.source = @_parseSource req, 'https:'
       @_bindings()._https.exec req.source.href, req, res, @_error404
     
     if @_options.https.websockets
       @_options.log.notice "https server configured for websockets"
       @_httpsServer.on 'upgrade', (req, socket, head) =>
-        req.source = @_parseSource req
+        req.source = @_parseSource req, 'https:'
         @_bindings()._httpsWs.exec req.source.href, req, socket, head, @_error404
     
     @_httpsServer.on 'error', (err, req, res) =>

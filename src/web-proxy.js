@@ -83,10 +83,10 @@ module.exports = WebProxy = (function() {
     }
   }
 
-  WebProxy.prototype._parseSource = function(req) {
+  WebProxy.prototype._parseSource = function(req, protocol) {
     var chunks, source;
     source = parse_url(req.url);
-    source.protocol = 'http:';
+    source.protocol = protocol;
     source.host = req.headers.host;
     chunks = source.host.split(':');
     source.hostname = chunks[0];
@@ -137,7 +137,7 @@ module.exports = WebProxy = (function() {
     this._options.http.hostname = bind.hostname;
     this._httpServer = http.createServer((function(_this) {
       return function(req, res) {
-        req.source = _this._parseSource(req);
+        req.source = _this._parseSource(req, 'http:');
         return _this._bindings()._http.exec(req.source.href, req, res, _this._error404);
       };
     })(this));
@@ -145,7 +145,7 @@ module.exports = WebProxy = (function() {
       this._options.log.notice('http server configured for websockets');
       this._httpServer.on('upgrade', (function(_this) {
         return function(req, socket, head) {
-          req.source = _this._parseSource(req);
+          req.source = _this._parseSource(req, 'http:');
           return _this._bindings()._httpWs.exec(req.source.href, req, socket, head, _this._error404);
         };
       })(this));
@@ -170,7 +170,7 @@ module.exports = WebProxy = (function() {
     this._options.https.hostname = bind.hostname;
     this._httpsServer = https.createServer(this.certificates.getHttpsOptions(this._options.https), (function(_this) {
       return function(req, res) {
-        req.source = _this._parseSource(req);
+        req.source = _this._parseSource(req, 'https:');
         return _this._bindings()._https.exec(req.source.href, req, res, _this._error404);
       };
     })(this));
@@ -178,7 +178,7 @@ module.exports = WebProxy = (function() {
       this._options.log.notice("https server configured for websockets");
       this._httpsServer.on('upgrade', (function(_this) {
         return function(req, socket, head) {
-          req.source = _this._parseSource(req);
+          req.source = _this._parseSource(req, 'https:');
           return _this._bindings()._httpsWs.exec(req.source.href, req, socket, head, _this._error404);
         };
       })(this));
