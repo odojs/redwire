@@ -53,6 +53,10 @@ module.exports = RedWire = (function() {
     this.proxyTcp = __bind(this.proxyTcp, this);
     this.proxyWs = __bind(this.proxyWs, this);
     this.proxy = __bind(this.proxy, this);
+    this.redirect302 = __bind(this.redirect302, this);
+    this.redirect301 = __bind(this.redirect301, this);
+    this.error500 = __bind(this.error500, this);
+    this.error404 = __bind(this.error404, this);
     this.cors = __bind(this.cors, this);
     this.loadBalancer = __bind(this.loadBalancer, this);
     this.sslRedirect = __bind(this.sslRedirect, this);
@@ -118,6 +122,30 @@ module.exports = RedWire = (function() {
     var args, _ref;
     args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
     return (_ref = this._webProxy).cors.apply(_ref, args);
+  };
+
+  RedWire.prototype.error404 = function() {
+    var args, _ref;
+    args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    return (_ref = this._webProxy).error404.apply(_ref, args);
+  };
+
+  RedWire.prototype.error500 = function() {
+    var args, _ref;
+    args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    return (_ref = this._webProxy).error500.apply(_ref, args);
+  };
+
+  RedWire.prototype.redirect301 = function() {
+    var args, _ref;
+    args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    return (_ref = this._webProxy).redirect301.apply(_ref, args);
+  };
+
+  RedWire.prototype.redirect302 = function() {
+    var args, _ref;
+    args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    return (_ref = this._webProxy).redirect302.apply(_ref, args);
   };
 
   RedWire.prototype.proxy = function() {
