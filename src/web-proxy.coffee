@@ -182,46 +182,44 @@ module.exports = class WebProxy
     res.end()
   
   error500: => (mount, url, req, res, next) => @_error500 req, res, ''
+
+  _redirectParseUrl: (url) =>
+    if url.indexOf('http://') isnt 0 and url.indexOf('https://') isnt 0
+      url = "http://#{url}"
+    url
+
+  _redirect: (req, res, code, location) =>
+    res.writeHead 301, Location: unescape location
+    res.end()
   
   _redirect301absolute: (req, res, location) =>
-    if location.indexOf('http://') isnt 0 and location.indexOf('https://') isnt 0
-      location = "http://#{location}"
-    res.writeHead 301, Location: location
-    res.end()
+    @_redirect req, res, 301, @_redirectParseUrl location
   
   redirect301absolute: (location) => (mount, url, req, res, next) =>
-    @_redirect301absolute req, res, location
+    @_redirect req, res, 301, @_redirectParseUrl location
   
   _redirect302absolute: (req, res, location) =>
-    if location.indexOf('http://') isnt 0 and location.indexOf('https://') isnt 0
-      location = "http://#{location}"
-    res.writeHead 302, Location: location
-    res.end()
+    @_redirect req, res, 302, @_redirectParseUrl location
   
   redirect302absolute: (location) => (mount, url, req, res, next) =>
-    @_redirect302absolute req, res, location
+    @_redirect req, res, 302, @_redirectParseUrl location
+  
+  _redirectParseRel: (location, url) =>
+    target = parse_url @_redirectParseUrl location
+    target.pathname += url[1..]
+    format_url target
   
   _redirect301: (req, res, location) =>
-    if location.indexOf('http://') isnt 0 and location.indexOf('https://') isnt 0
-      location = "http://#{location}"
-    target = parse_url location
-    target.pathname += req.url[1..]
-    res.writeHead 301, Location: format_url target
-    res.end()
+    @_redirect req, res, 301, @_redirectParseRel location, req.url
   
   redirect301: (location) => (mount, url, req, res, next) =>
-    @_redirect301 req, res, location
+    @_redirect req, res, 301, @_redirectParseRel location, req.url
   
   _redirect302: (req, res, location) =>
-    if location.indexOf('http://') isnt 0 and location.indexOf('https://') isnt 0
-      location = "http://#{location}"
-    target = parse_url location
-    target.pathname += req.url[1..]
-    res.writeHead 302, Location: format_url target
-    res.end()
+    @_redirect req, res, 302, @_redirectParseRel location, req.url
   
   redirect302: (location) => (mount, url, req, res, next) =>
-    @_redirect302 req, res, location
+    @_redirect req, res, 302, @_redirectParseRel location, req.url
   
   close: (cb) =>
     @_httpServer.close() if @_httpServer?

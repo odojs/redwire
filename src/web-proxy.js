@@ -25,10 +25,13 @@ module.exports = WebProxy = (function() {
     this._redirect302 = __bind(this._redirect302, this);
     this.redirect301 = __bind(this.redirect301, this);
     this._redirect301 = __bind(this._redirect301, this);
+    this._redirectParseRel = __bind(this._redirectParseRel, this);
     this.redirect302absolute = __bind(this.redirect302absolute, this);
     this._redirect302absolute = __bind(this._redirect302absolute, this);
     this.redirect301absolute = __bind(this.redirect301absolute, this);
     this._redirect301absolute = __bind(this._redirect301absolute, this);
+    this._redirect = __bind(this._redirect, this);
+    this._redirectParseUrl = __bind(this._redirectParseUrl, this);
     this.error500 = __bind(this.error500, this);
     this._error500 = __bind(this._error500, this);
     this.error404 = __bind(this.error404, this);
@@ -360,80 +363,71 @@ module.exports = WebProxy = (function() {
     })(this);
   };
 
-  WebProxy.prototype._redirect301absolute = function(req, res, location) {
-    if (location.indexOf('http://') !== 0 && location.indexOf('https://') !== 0) {
-      location = "http://" + location;
+  WebProxy.prototype._redirectParseUrl = function(url) {
+    if (url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0) {
+      url = "http://" + url;
     }
+    return url;
+  };
+
+  WebProxy.prototype._redirect = function(req, res, code, location) {
     res.writeHead(301, {
-      Location: location
+      Location: unescape(location)
     });
     return res.end();
+  };
+
+  WebProxy.prototype._redirect301absolute = function(req, res, location) {
+    return this._redirect(req, res, 301, this._redirectParseUrl(location));
   };
 
   WebProxy.prototype.redirect301absolute = function(location) {
     return (function(_this) {
       return function(mount, url, req, res, next) {
-        return _this._redirect301absolute(req, res, location);
+        return _this._redirect(req, res, 301, _this._redirectParseUrl(location));
       };
     })(this);
   };
 
   WebProxy.prototype._redirect302absolute = function(req, res, location) {
-    if (location.indexOf('http://') !== 0 && location.indexOf('https://') !== 0) {
-      location = "http://" + location;
-    }
-    res.writeHead(302, {
-      Location: location
-    });
-    return res.end();
+    return this._redirect(req, res, 302, this._redirectParseUrl(location));
   };
 
   WebProxy.prototype.redirect302absolute = function(location) {
     return (function(_this) {
       return function(mount, url, req, res, next) {
-        return _this._redirect302absolute(req, res, location);
+        return _this._redirect(req, res, 302, _this._redirectParseUrl(location));
       };
     })(this);
   };
 
-  WebProxy.prototype._redirect301 = function(req, res, location) {
+  WebProxy.prototype._redirectParseRel = function(location, url) {
     var target;
-    if (location.indexOf('http://') !== 0 && location.indexOf('https://') !== 0) {
-      location = "http://" + location;
-    }
-    target = parse_url(location);
-    target.pathname += req.url.slice(1);
-    res.writeHead(301, {
-      Location: format_url(target)
-    });
-    return res.end();
+    target = parse_url(this._redirectParseUrl(location));
+    target.pathname += url.slice(1);
+    return format_url(target);
+  };
+
+  WebProxy.prototype._redirect301 = function(req, res, location) {
+    return this._redirect(req, res, 301, this._redirectParseRel(location, req.url));
   };
 
   WebProxy.prototype.redirect301 = function(location) {
     return (function(_this) {
       return function(mount, url, req, res, next) {
-        return _this._redirect301(req, res, location);
+        return _this._redirect(req, res, 301, _this._redirectParseRel(location, req.url));
       };
     })(this);
   };
 
   WebProxy.prototype._redirect302 = function(req, res, location) {
-    var target;
-    if (location.indexOf('http://') !== 0 && location.indexOf('https://') !== 0) {
-      location = "http://" + location;
-    }
-    target = parse_url(location);
-    target.pathname += req.url.slice(1);
-    res.writeHead(302, {
-      Location: format_url(target)
-    });
-    return res.end();
+    return this._redirect(req, res, 302, this._redirectParseRel(location, req.url));
   };
 
   WebProxy.prototype.redirect302 = function(location) {
     return (function(_this) {
       return function(mount, url, req, res, next) {
-        return _this._redirect302(req, res, location);
+        return _this._redirect(req, res, 302, _this._redirectParseRel(location, req.url));
       };
     })(this);
   };
