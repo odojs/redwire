@@ -183,10 +183,30 @@ module.exports = class WebProxy
   
   error500: => (mount, url, req, res, next) => @_error500 req, res, ''
   
-  _redirect301: (req, res, location) =>
+  _redirect301absolute: (req, res, location) =>
     if location.indexOf('http://') isnt 0 and location.indexOf('https://') isnt 0
       location = "http://#{location}"
     res.writeHead 301, Location: location
+    res.end()
+  
+  redirect301absolute: (location) => (mount, url, req, res, next) =>
+    @_redirect301absolute req, res, location
+  
+  _redirect302absolute: (req, res, location) =>
+    if location.indexOf('http://') isnt 0 and location.indexOf('https://') isnt 0
+      location = "http://#{location}"
+    res.writeHead 302, Location: location
+    res.end()
+  
+  redirect302absolute: (location) => (mount, url, req, res, next) =>
+    @_redirect302absolute req, res, location
+  
+  _redirect301: (req, res, location) =>
+    if location.indexOf('http://') isnt 0 and location.indexOf('https://') isnt 0
+      location = "http://#{location}"
+    target = parse_url location
+    target.pathname += req.url[1..]
+    res.writeHead 301, Location: format_url target
     res.end()
   
   redirect301: (location) => (mount, url, req, res, next) =>
@@ -195,7 +215,9 @@ module.exports = class WebProxy
   _redirect302: (req, res, location) =>
     if location.indexOf('http://') isnt 0 and location.indexOf('https://') isnt 0
       location = "http://#{location}"
-    res.writeHead 302, Location: location
+    target = parse_url location
+    target.pathname += req.url[1..]
+    res.writeHead 302, Location: format_url target
     res.end()
   
   redirect302: (location) => (mount, url, req, res, next) =>

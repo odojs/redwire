@@ -25,6 +25,10 @@ module.exports = WebProxy = (function() {
     this._redirect302 = __bind(this._redirect302, this);
     this.redirect301 = __bind(this.redirect301, this);
     this._redirect301 = __bind(this._redirect301, this);
+    this.redirect302absolute = __bind(this.redirect302absolute, this);
+    this._redirect302absolute = __bind(this._redirect302absolute, this);
+    this.redirect301absolute = __bind(this.redirect301absolute, this);
+    this._redirect301absolute = __bind(this._redirect301absolute, this);
     this.error500 = __bind(this.error500, this);
     this._error500 = __bind(this._error500, this);
     this.error404 = __bind(this.error404, this);
@@ -356,12 +360,51 @@ module.exports = WebProxy = (function() {
     })(this);
   };
 
-  WebProxy.prototype._redirect301 = function(req, res, location) {
+  WebProxy.prototype._redirect301absolute = function(req, res, location) {
     if (location.indexOf('http://') !== 0 && location.indexOf('https://') !== 0) {
       location = "http://" + location;
     }
     res.writeHead(301, {
       Location: location
+    });
+    return res.end();
+  };
+
+  WebProxy.prototype.redirect301absolute = function(location) {
+    return (function(_this) {
+      return function(mount, url, req, res, next) {
+        return _this._redirect301absolute(req, res, location);
+      };
+    })(this);
+  };
+
+  WebProxy.prototype._redirect302absolute = function(req, res, location) {
+    if (location.indexOf('http://') !== 0 && location.indexOf('https://') !== 0) {
+      location = "http://" + location;
+    }
+    res.writeHead(302, {
+      Location: location
+    });
+    return res.end();
+  };
+
+  WebProxy.prototype.redirect302absolute = function(location) {
+    return (function(_this) {
+      return function(mount, url, req, res, next) {
+        return _this._redirect302absolute(req, res, location);
+      };
+    })(this);
+  };
+
+  WebProxy.prototype._redirect301 = function(req, res, location) {
+    var target;
+    if (location.indexOf('http://') !== 0 && location.indexOf('https://') !== 0) {
+      location = "http://" + location;
+    }
+    target = parse_url(location);
+    target.pathname += req.url.slice(1);
+    res.writeHead(301, {
+      Location: format_url(target)
     });
     return res.end();
   };
@@ -375,11 +418,14 @@ module.exports = WebProxy = (function() {
   };
 
   WebProxy.prototype._redirect302 = function(req, res, location) {
+    var target;
     if (location.indexOf('http://') !== 0 && location.indexOf('https://') !== 0) {
       location = "http://" + location;
     }
+    target = parse_url(location);
+    target.pathname += req.url.slice(1);
     res.writeHead(302, {
-      Location: location
+      Location: format_url(target)
     });
     return res.end();
   };
