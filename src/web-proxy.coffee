@@ -85,6 +85,7 @@ module.exports = class WebProxy
     @_httpServer.on 'error', (err, req, res) =>
       @_error500 req, res, err if req? and res?
       @_options.log.error err
+      try res.end() if res?
     
     @_httpServer.listen @_options.http.port, @_options.http.hostname
     @_options.log.notice "http server listening on #{@_options.http.hostname}:#{@_options.http.port}"
@@ -109,6 +110,7 @@ module.exports = class WebProxy
     @_httpsServer.on 'error', (err, req, res) =>
       @_error500 req, res, err if req? and res?
       @_options.log.error err
+      try res.end() if res?
     
     @_httpsServer.listen @_options.https.port, @_options.https.hostname
     @_options.log.notice "https server listening on #{@_options.https.hostname}:#{@_options.https.port}"
@@ -120,6 +122,7 @@ module.exports = class WebProxy
     @_proxy.on 'error', (err, req, res) =>
       @_error500 req, res, err if req? and res? !res.headersSent
       @_options.log.error err
+      try res.end() if res?
   
   proxy: (target) => (mount, url, req, res, next) =>
     t = target
@@ -128,7 +131,7 @@ module.exports = class WebProxy
     t = req.target if !t?
     return @_error500 req, res, 'No server to proxy to' if !t?
     url = @_translateUrl mount, t, url
-    #console.log "#{mount} proxy #{req.url} url"
+    @_options.log.notice "#{mount} proxy #{req.url} url"
     req.url = url
     @_proxy.web req, res, target: t
   
@@ -139,7 +142,7 @@ module.exports = class WebProxy
     t = req.target if !t?
     return @_error500 req, socket, 'No server to proxy to' if !t?
     url = @_translateUrl mount, t, url
-    #console.log "#{mount} proxy #{req.url} url"
+    @_options.log.notice "#{mount} proxy #{req.url} url"
     req.url = url
     @_proxy.ws req, socket, head, target: t
   
@@ -189,7 +192,7 @@ module.exports = class WebProxy
     url
 
   _redirect: (req, res, code, location) =>
-    res.writeHead 301, Location: unescape location
+    res.writeHead code, Location: location
     res.end()
   
   _redirect301absolute: (req, res, location) =>
@@ -205,9 +208,9 @@ module.exports = class WebProxy
     @_redirect req, res, 302, @_redirectParseUrl location
   
   _redirectParseRel: (location, url) =>
-    target = parse_url @_redirectParseUrl location
-    target.pathname += url[1..]
-    format_url target
+    target = @_redirectParseUrl location
+    target += url
+    target
   
   _redirect301: (req, res, location) =>
     @_redirect req, res, 301, @_redirectParseRel location, req.url

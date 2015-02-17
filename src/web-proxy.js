@@ -162,7 +162,12 @@ module.exports = WebProxy = (function() {
         if ((req != null) && (res != null)) {
           _this._error500(req, res, err);
         }
-        return _this._options.log.error(err);
+        _this._options.log.error(err);
+        try {
+          if (res != null) {
+            return res.end();
+          }
+        } catch (_error) {}
       };
     })(this));
     this._httpServer.listen(this._options.http.port, this._options.http.hostname);
@@ -195,7 +200,12 @@ module.exports = WebProxy = (function() {
         if ((req != null) && (res != null)) {
           _this._error500(req, res, err);
         }
-        return _this._options.log.error(err);
+        _this._options.log.error(err);
+        try {
+          if (res != null) {
+            return res.end();
+          }
+        } catch (_error) {}
       };
     })(this));
     this._httpsServer.listen(this._options.https.port, this._options.https.hostname);
@@ -216,7 +226,12 @@ module.exports = WebProxy = (function() {
         if ((req != null) && (typeof res === "function" ? res(!res.headersSent) : void 0)) {
           _this._error500(req, res, err);
         }
-        return _this._options.log.error(err);
+        _this._options.log.error(err);
+        try {
+          if (res != null) {
+            return res.end();
+          }
+        } catch (_error) {}
       };
     })(this));
   };
@@ -236,6 +251,7 @@ module.exports = WebProxy = (function() {
           return _this._error500(req, res, 'No server to proxy to');
         }
         url = _this._translateUrl(mount, t, url);
+        _this._options.log.notice("" + mount + " proxy " + req.url + " url");
         req.url = url;
         return _this._proxy.web(req, res, {
           target: t
@@ -259,6 +275,7 @@ module.exports = WebProxy = (function() {
           return _this._error500(req, socket, 'No server to proxy to');
         }
         url = _this._translateUrl(mount, t, url);
+        _this._options.log.notice("" + mount + " proxy " + req.url + " url");
         req.url = url;
         return _this._proxy.ws(req, socket, head, {
           target: t
@@ -371,8 +388,8 @@ module.exports = WebProxy = (function() {
   };
 
   WebProxy.prototype._redirect = function(req, res, code, location) {
-    res.writeHead(301, {
-      Location: unescape(location)
+    res.writeHead(code, {
+      Location: location
     });
     return res.end();
   };
@@ -403,9 +420,9 @@ module.exports = WebProxy = (function() {
 
   WebProxy.prototype._redirectParseRel = function(location, url) {
     var target;
-    target = parse_url(this._redirectParseUrl(location));
-    target.pathname += url.slice(1);
-    return format_url(target);
+    target = this._redirectParseUrl(location);
+    target += url;
+    return target;
   };
 
   WebProxy.prototype._redirect301 = function(req, res, location) {
