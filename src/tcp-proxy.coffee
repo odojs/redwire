@@ -45,7 +45,7 @@ module.exports = class TcpProxy
     t = req.target if !t?
     if t? and typeof t is 'string' and t.indexOf('tcp://')
       t = "tcp://#{t}"
-    return @_tcpError req, socket, 'No server to proxy to' if !t?
+    return next() if !t?
     
     url = parse_url t
     url =
@@ -68,7 +68,7 @@ module.exports = class TcpProxy
     t = req.target if !t?
     if t? and t.indexOf('tls://')
       t = "tls://#{t}"
-    return @_tlsError req, socket, 'No server to proxy to' if !t?
+    return next() if !t?
     
     options = req if !options?
     url = parse_url t
