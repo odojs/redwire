@@ -12,6 +12,7 @@ RedWire supports:
 - websockets over http and https
 - changing configuration at runtime
 - custom functions (middleware)
+- Node.js v0.12 / iojs
 
 [![BuildStatus](https://secure.travis-ci.org/metocean/redwire.png?branch=master)](http://travis-ci.org/metocean/redwire)
 [![NPM version](https://badge.fury.io/js/redwire.svg)](http://badge.fury.io/js/redwire)
