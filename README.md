@@ -108,7 +108,8 @@ var options = {
     https: no,
     proxy: {
         xfwd: yes,
-        prependPath: no
+        prependPath: no,
+        keepAlive: no
     },
     log: {
         debug: function() {},

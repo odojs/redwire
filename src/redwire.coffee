@@ -17,6 +17,7 @@ module.exports = class RedWire
     @_options =
       http: no
       https: no
+      http2: no
       tcp: no
       tls: no
       proxy:
@@ -34,7 +35,7 @@ module.exports = class RedWire
     copy options, @_options
     
     @_bindings = @createNewBindings()
-    if @_options.http? or @_options.https?
+    if @_options.http? or @_options.https? or @_options.http2?
       @_webProxy = new WebProxy @_options, => @_bindings
     if @_options.tcp? or @_options.tls?
       @_tcpProxy = new TcpProxy @_options, => @_bindings
@@ -60,6 +61,7 @@ module.exports = class RedWire
   # Register bindings
   http: (args...) => @_bindings.http args...
   https: (args...) => @_bindings.https args...
+  http2: (args...) => @_bindings.http2 args...
   httpWs: (args...) => @_bindings.httpWs args...
   httpsWs: (args...) => @_bindings.httpsWs args...
   tcp: (args...) => @_bindings.tcp args...
@@ -68,10 +70,12 @@ module.exports = class RedWire
   # Manage bindings
   removeHttp: (args...) => @_bindings.removeHttp args...
   removeHttps: (args...) => @_bindings.removeHttps args...
+  removeHttp2: (args...) => @_bindings.removeHttp2 args...
   removeHttpWs: (args...) => @_bindings.removeHttpWs args...
   removeHttpsWs: (args...) => @_bindings.removeHttpsWs args...
   clearHttp: => @_bindings.clearHttp()
   clearHttps: => @_bindings.clearHttps()
+  clearHttp2: => @_bindings.clearHttp2()
   clearHttpWs: => @_bindings.clearHttpWs()
   clearHttpsWs: => @_bindings.clearHttpsWs()
   clearTcp: => @_bindings.clearTcp()
