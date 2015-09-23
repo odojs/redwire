@@ -36,11 +36,14 @@ module.exports = class WebProxy
           @_bindings().http2 source, target
       , 1
 
-  _parseSource: (req, protocol) =>
+  _parseSource: (req, protocol, hostname, port) =>
     source = parse_url req.url
     source.protocol = protocol
     source.host = req.headers.host
-    chunks = source.host.split ':'
+    if source.host
+      chunks = source.host.split ':'
+    else
+      chunks = [ hostname, port ]
     source.hostname = chunks[0]
     source.port = chunks[1] or null
     source.href = "#{source.protocol}//#{source.host}#{source.path}"
@@ -81,13 +84,13 @@ module.exports = class WebProxy
     @_options.http.hostname = bind.hostname
 
     @_httpServer = http.createServer (req, res) =>
-      req.source = @_parseSource req, 'http:'
+      req.source = @_parseSource req, 'http:', @_options.http.hostname, @_options.http.port
       @_bindings()._http.exec req.source.href, req, res, @_error404
 
     if @_options.http.websockets
       @_options.log.notice 'http server configured for websockets'
       @_httpServer.on 'upgrade', (req, socket, head) =>
-        req.source = @_parseSource req, 'http:'
+        req.source = @_parseSource req, 'http:', @_options.http.hostname, @_options.http.port
         @_bindings()._httpWs.exec req.source.href, req, socket, head, @_error404
 
     @_httpServer.on 'error', (err, req, res) =>
@@ -106,13 +109,13 @@ module.exports = class WebProxy
     @_options.https.hostname = bind.hostname
 
     @_httpsServer = https.createServer @certificates.getHttpsOptions(@_options.https), (req, res) =>
-      req.source = @_parseSource req, 'https:'
+      req.source = @_parseSource req, 'https:', @_options.https.hostname, @_options.https.port
       @_bindings()._https.exec req.source.href, req, res, @_error404
 
     if @_options.https.websockets
       @_options.log.notice "https server configured for websockets"
       @_httpsServer.on 'upgrade', (req, socket, head) =>
-        req.source = @_parseSource req, 'https:'
+        req.source = @_parseSource req, 'https:', @_options.https.hostname, @_options.https.port
         @_bindings()._httpsWs.exec req.source.href, req, socket, head, @_error404
 
     @_httpsServer.on 'error', (err, req, res) =>
@@ -133,7 +136,7 @@ module.exports = class WebProxy
     @_http2Server = http2.createServer @certificates.getHttpsOptions(@_options.http2), (req, res) =>
       req.connection =
         encrypted = yes
-      req.source = @_parseSource req, 'https:'
+      req.source = @_parseSource req, 'https:', @_options.http2.hostname, @_options.http2.port
       @_bindings()._http2.exec req.source.href, req, res, @_error404
 
     @_http2Server.on 'error', (err, req, res) =>
