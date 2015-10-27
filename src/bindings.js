@@ -42,7 +42,7 @@ module.exports = Bindings = (function() {
 
   Bindings.prototype.http = function(url, target) {
     var result;
-    if (url.indexOf('http://') !== 0) {
+    if (url !== '*' && url.indexOf('http://') !== 0) {
       url = "http://" + url;
     }
     result = this._http.match(url);
@@ -60,7 +60,7 @@ module.exports = Bindings = (function() {
 
   Bindings.prototype.https = function(url, target) {
     var result;
-    if (url.indexOf('https://') !== 0) {
+    if (url !== '*' && url.indexOf('https://') !== 0) {
       url = "https://" + url;
     }
     result = this._https.match(url);
@@ -78,7 +78,7 @@ module.exports = Bindings = (function() {
 
   Bindings.prototype.http2 = function(url, target) {
     var result;
-    if (url.indexOf('https://') !== 0) {
+    if (url !== '*' && url.indexOf('https://') !== 0) {
       url = "https://" + url;
     }
     result = this._http2.match(url);
@@ -96,7 +96,7 @@ module.exports = Bindings = (function() {
 
   Bindings.prototype.httpWs = function(url, target) {
     var result;
-    if (url.indexOf('http://') !== 0) {
+    if (url !== '*' && url.indexOf('http://') !== 0) {
       url = "http://" + url;
     }
     result = this._httpWs.match(url);
@@ -114,7 +114,7 @@ module.exports = Bindings = (function() {
 
   Bindings.prototype.httpsWs = function(url, target) {
     var result;
-    if (url.indexOf('https://') !== 0) {
+    if (url !== '*' && url.indexOf('https://') !== 0) {
       url = "https://" + url;
     }
     result = this._httpsWs.match(url);

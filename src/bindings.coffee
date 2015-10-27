@@ -15,7 +15,7 @@ module.exports = class Bindings
     @_tls = new UseNode()
   
   http: (url, target) =>
-    url = "http://#{url}" if url.indexOf('http://') isnt 0
+    url = "http://#{url}" if url isnt '*' and url.indexOf('http://') isnt 0
     result = @_http.match url
     return result if !target?
     
@@ -25,7 +25,7 @@ module.exports = class Bindings
     throw Error 'target not a known type'
   
   https: (url, target) =>
-    url = "https://#{url}" if url.indexOf('https://') isnt 0
+    url = "https://#{url}" if url isnt '*' and url.indexOf('https://') isnt 0
     result = @_https.match url
     return result if !target?
     
@@ -35,7 +35,7 @@ module.exports = class Bindings
     throw Error 'target not a known type'
   
   http2: (url, target) =>
-    url = "https://#{url}" if url.indexOf('https://') isnt 0
+    url = "https://#{url}" if url isnt '*' and url.indexOf('https://') isnt 0
     result = @_http2.match url
     return result if !target?
     
@@ -45,7 +45,7 @@ module.exports = class Bindings
     throw Error 'target not a known type'
   
   httpWs: (url, target) =>
-    url = "http://#{url}" if url.indexOf('http://') isnt 0
+    url = "http://#{url}" if url isnt '*' and url.indexOf('http://') isnt 0
     result = @_httpWs.match url
     return result if !target?
     
@@ -55,7 +55,7 @@ module.exports = class Bindings
     throw Error 'target not a known type'
   
   httpsWs: (url, target) =>
-    url = "https://#{url}" if url.indexOf('https://') isnt 0
+    url = "https://#{url}" if url isnt '*' and url.indexOf('https://') isnt 0
     result = @_httpsWs.match url
     return result if !target?
     

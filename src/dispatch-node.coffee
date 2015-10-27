@@ -9,6 +9,7 @@ module.exports = class DispatchNode
     @_url = url
     @_handlers = []
     @_listeners = []
+    @_wildcard = null
   
   _find: (url) =>
     for listener in @_listeners
@@ -16,6 +17,11 @@ module.exports = class DispatchNode
     null
   
   match: (url) =>
+    if url is '*'
+      if !@_wildcard?
+        @_wildcard = @_createNode '*'
+      return @_wildcard
+    
     listener = @_find url
     if !listener?
       listener = url: url, node: @_createNode url
@@ -34,6 +40,7 @@ module.exports = class DispatchNode
   clear: =>
     @_handlers = []
     @_listeners = []
+    @_wildcard = null
   
   use: (handler) =>
     if Array.isArray handler
@@ -65,4 +72,6 @@ module.exports = class DispatchNode
   
   exec: (url, args..., next) =>
     @_dispatchHandlers url, args..., =>
-      @_dispatchListeners url, args..., next
+      @_dispatchListeners url, args..., =>
+        return next args... if !@_wildcard?
+        @_wildcard.exec url, args..., next
