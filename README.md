@@ -129,6 +129,10 @@ var redwire = new RedWire(options);
 ### HTTP Configuration
 
 When websockets are enabled use `redwire.httpWs` to setup routes and middleware for websocket requests.
+```
+var redwire = new RedWire({http: { port: 80, websockets: true }})
+redwire.httpWs(process.env.PUBLIC_HOST).use(redwire.proxyWs('http://127.0.0.1:3000'))
+```
 RedWire is often most useful handing request on port 80. If this is required your NodeJs application will need to run as root.
 
 ### HTTPS Configuration
