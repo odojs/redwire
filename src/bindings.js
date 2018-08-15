@@ -157,22 +157,42 @@ module.exports = Bindings = (function() {
   };
 
   Bindings.prototype.removeHttp = function(url) {
+    if (url !== '*' && url.indexOf('http://') !== 0) {
+      url = "http://" + url;
+    }
+
     return this._http.remove(url);
   };
 
   Bindings.prototype.removeHttps = function(url) {
+    if (url !== '*' && url.indexOf('https://') !== 0) {
+      url = "https://" + url;
+    }
+
     return this._https.remove(url);
   };
 
   Bindings.prototype.removeHttp2 = function(url) {
+    if (url !== '*' && url.indexOf('https://') !== 0) {
+      url = "https://" + url;
+    }
+
     return this._http2.remove(url);
   };
 
   Bindings.prototype.removeHttpWs = function(url) {
+    if (url !== '*' && url.indexOf('http://') !== 0) {
+      url = "http://" + url;
+    }
+
     return this._httpWs.remove(url);
   };
 
   Bindings.prototype.removeHttpsWs = function(url) {
+    if (url !== '*' && url.indexOf('https://') !== 0) {
+      url = "https://" + url;
+    }
+
     return this._httpsWs.remove(url);
   };
 
